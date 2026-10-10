@@ -173,6 +173,10 @@ async function hacerRegistro() {
 window.addEventListener('DOMContentLoaded', () => {
   cargarRegionesRegistro();
 
+  // Escuchar el cambio de cargo para mostrar/ocultar bloque OPT
+  const selCargo = document.getElementById('reg-cargo');
+  if (selCargo) selCargo.addEventListener('change', toggleBloqueOpt);
+
   // Auto-login si hay token
   const token = localStorage.getItem('oep_token');
   const usuario = localStorage.getItem('oep_usuario');
@@ -183,3 +187,54 @@ window.addEventListener('DOMContentLoaded', () => {
     irA('panel');
   }
 });
+// ============================================================
+// FASE 6 — CASCADA MUNICIPIOS / PARROQUIAS + OPT
+// ============================================================
+
+function toggleBloqueOpt() {
+  const cargo = document.getElementById('reg-cargo').value;
+  const mostrar = (cargo === 'Jefe de OPT');
+  const bloqueOpt = document.getElementById('bloque-opt');
+  const bloqueGeo = document.getElementById('bloque-geo-opt');
+  if (bloqueOpt) bloqueOpt.style.display = mostrar ? '' : 'none';
+  if (bloqueGeo) bloqueGeo.style.display = mostrar ? '' : 'none';
+}
+
+async function cargarMunicipiosRegistro() {
+  const estado = document.getElementById('reg-estado').value;
+  const sel = document.getElementById('reg-municipio');
+  const selPar = document.getElementById('reg-parroquia');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Seleccione...</option>';
+  if (selPar) selPar.innerHTML = '<option value="">Seleccione...</option>';
+  if (!estado) return;
+
+  const r = await llamarAPI('obtenerMunicipios', { estado });
+  if (r.ok) {
+    r.municipios.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+async function cargarParroquiasRegistro() {
+  const estado = document.getElementById('reg-estado').value;
+  const municipio = document.getElementById('reg-municipio').value;
+  const sel = document.getElementById('reg-parroquia');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Seleccione...</option>';
+  if (!estado || !municipio) return;
+
+  const r = await llamarAPI('obtenerParroquias', { estado, municipio });
+  if (r.ok) {
+    r.parroquias.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      sel.appendChild(opt);
+    });
+  }
+}
