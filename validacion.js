@@ -144,7 +144,7 @@ async function accionValidar(idReporte, accion, modal) {
   const token = localStorage.getItem('oep_token');
   const comentario = modal.querySelector('#comentario-val').value.trim();
 
-  const r = await api('accionValidar', { token, idReporte, accion, comentario });
+  const r = await api('accionValidar', { token, idReporte, tipoAccion, comentario });
   if (!r.ok) {
     alert('Error: ' + r.error);
     return;
