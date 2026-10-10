@@ -59,9 +59,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 // RENDER
 // ============================================================
 function renderIndicadores() {
-  const cont = document.getElementById('contenedor-indicadores');
   const spinner = document.getElementById('spinner-carga');
   if (spinner) spinner.style.display = 'none';
+
+  const cont = document.getElementById('contenedor-indicadores');
   cont.innerHTML = '';
 
   INDICADORES.forEach(ind => {
