@@ -111,6 +111,7 @@ function cargarEstadosRegistro() {
 async function hacerRegistro() {
   const msg = document.getElementById('registro-msg');
   msg.textContent = '';
+  msg.style.color = '#c0392b';
 
   const datos = {
     cedula: document.getElementById('reg-cedula').value.trim(),
@@ -122,7 +123,6 @@ async function hacerRegistro() {
     direccion: document.getElementById('reg-direccion').value.trim(),
     region: document.getElementById('reg-region').value,
     estado: document.getElementById('reg-estado').value,
-    opt: document.getElementById('reg-opt').value.trim(),
     usuario: document.getElementById('reg-usuario').value.trim(),
     clave: document.getElementById('reg-clave').value
   };
@@ -135,8 +135,31 @@ async function hacerRegistro() {
   msg.textContent = 'Registrando...';
 
   try {
+    // Si es Jefe de OPT → primero crear la OPT
+    if (datos.cargo === 'Jefe de OPT') {
+      const nombreOpt = document.getElementById('reg-opt-nombre').value.trim();
+      const municipio = document.getElementById('reg-municipio').value;
+      const parroquia = document.getElementById('reg-parroquia').value;
+
+      if (!nombreOpt || !datos.estado || !municipio || !parroquia) {
+        msg.textContent = 'Faltan datos de la OPT (nombre, estado, municipio, parroquia)';
+        return;
+      }
+
+      const rOpt = await llamarAPI('crearOpt', {
+        nombre: nombreOpt,
+        estado: datos.estado,
+        municipio: municipio,
+        parroquia: parroquia
+      });
+
+      if (!rOpt.ok) { msg.textContent = 'OPT: ' + rOpt.error; return; }
+      datos.opt = rOpt.idOpt;
+    }
+
     const r = await llamarAPI('registrar', datos);
     if (!r.ok) { msg.textContent = r.error; return; }
+
     msg.style.color = '#27ae60';
     msg.textContent = '✅ Registrado como ' + r.idUsuario + '. Redirigiendo...';
     setTimeout(() => irA('login'), 1500);
@@ -144,7 +167,6 @@ async function hacerRegistro() {
     msg.textContent = 'Error: ' + e.message;
   }
 }
-
 // ============================================================
 // ARRANQUE
 // ============================================================
