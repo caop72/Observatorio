@@ -65,7 +65,7 @@ function renderIndicadores() {
   INDICADORES.forEach(ind => {
     const v = VALORES_ACTUALES[ind.codigo] || {};
     const div = document.createElement('div');
-    div.className = 'mb-3 p-3 border rounded';
+    div.className = 'mb-3 p-3 border rounded bg-white shadow-sm';
     div.innerHTML = `<label class="form-label fw-bold">${ind.codigo} — ${ind.nombre}</label>`;
 
     if (ind.tipo === 'SELECTOR_SIMPLE') {
