@@ -2,7 +2,7 @@
  * OEP - Módulo Jefe de OPT (Carga Diaria)
  **************************************************************/
 
-const API_URL = 'https://script.google.com/macros/s/AKfycby-F2Ww2yUntW1fDmkwsRd-hHmkGq7AiO0DQH-FO6IpifHWvIPzVFeB9tBArJk-Jdiq3w/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbygWy1uVxFC32sdHM5gHk3o-p_LWHudotGaEaUC1rkWnLbPcK2Z8sqtzaZ9R_GY7fwzEQ/exec';
 
 let INDICADORES = [];
 let VALORES_ACTUALES = {};
