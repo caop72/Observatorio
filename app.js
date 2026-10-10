@@ -3,7 +3,7 @@
  * FASE 4: Splash + Login + Registro
  **************************************************************/
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycby-F2Ww2yUntW1fDmkwsRd-hHmkGq7AiO0DQH-FO6IpifHWvIPzVFeB9tBArJk-Jdiq3w/exec';
 
 const REGIONES_ESTADOS = {
   'Andina':       ['Mérida', 'Trujillo', 'Táchira'],
