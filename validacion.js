@@ -154,3 +154,12 @@ async function accionValidar(idReporte, accion, modal) {
   modal.remove();
   cargarReportes();
 }
+async function cerrarSesion() {
+  const token = localStorage.getItem('oep_token');
+  try {
+    if (token) await api('logout', { token });
+  } catch (e) {}
+  localStorage.clear();
+  sessionStorage.clear();
+  location.href = 'index.html';
+}
