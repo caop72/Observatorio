@@ -26,23 +26,25 @@ body {
   color: #fff;
 }
 
-.logo-splash {
-  width: 140px;
-  margin-bottom: 20px;
-  filter: brightness(0) invert(1);
-}
-
 .splash-contenido h1 {
   font-size: 3rem;
   font-weight: 700;
   letter-spacing: 4px;
   margin: 0;
+  color: #fff !important;
 }
 
 .subtitulo {
   font-size: 1.1rem;
   opacity: 0.85;
   margin-top: 8px;
+  color: #fff !important;
+}
+
+.logo-splash {
+  width: 140px;
+  margin-bottom: 20px;
+  filter: brightness(0) invert(1);
 }
 
 /* TARJETAS */
@@ -65,12 +67,55 @@ body {
   font-weight: 700;
 }
 
-.form-label {
+/* FORMULARIOS */
+.form-label,
+label {
   font-weight: 600;
-  color: #1a3d7c;
+  color: #1a3d7c !important;
   font-size: 0.9rem;
 }
 
+.form-label.fw-bold {
+  color: #1a3d7c !important;
+  font-size: 1rem;
+}
+
+/* Bloque de cada indicador */
+#contenedor-indicadores > div {
+  background: #fff !important;
+}
+
+#contenedor-indicadores label {
+  color: #1a3d7c !important;
+}
+
+/* Contenedor general de la vista reporte */
+.container,
+.container-fluid {
+  color: #fff;
+}
+
+/* Los títulos y labels dentro del contenedor reporte */
+.container h4,
+.container h2,
+.container h3 {
+  color: #fff !important;
+}
+
+/* Los labels dentro de tarjetas blancas son azules */
+.card-form label,
+.card-form .form-label {
+  color: #1a3d7c !important;
+}
+
+/* NAVBAR */
+.navbar-brand,
+.navbar .text-white,
+.navbar span {
+  color: #fff !important;
+}
+
+/* BOTONES */
 .btn-primary {
   background-color: #1a3d7c;
   border-color: #1a3d7c;
@@ -82,6 +127,13 @@ body {
   border-color: #0d1f3d;
 }
 
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  font-weight: 600;
+}
+
+/* MENSAJES */
 .msg-error {
   color: #c0392b;
   font-size: 0.9rem;
@@ -93,35 +145,50 @@ hr { margin: 24px 0; }
 
 a { color: #1a3d7c; font-weight: 600; }
 
+/* ALERTAS */
+.alert-warning {
+  color: #664d03;
+  background-color: #fff3cd;
+  border-color: #ffecb5;
+}
+
+.alert-danger {
+  color: #842029;
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
+}
 /* ============================================
-   FIX CONTRASTE — Aplicación global
+   FORZAR CONTRASTE EN FORMULARIO DE REPORTE
    ============================================ */
-body {
-  color: #333;
+
+/* Cada bloque de indicador: fondo blanco */
+#contenedor-indicadores > div {
+  background: #ffffff !important;
+  border: 1px solid #dee2e6 !important;
+  color: #333 !important;
 }
 
-.card-form, 
-.container,
-.container-fluid {
-  color: #333;
-}
-
-label, .form-label {
+/* Labels dentro de los bloques de indicador */
+#contenedor-indicadores label {
   color: #1a3d7c !important;
-  font-weight: 600;
+  font-weight: 700 !important;
 }
 
-h1, h2, h3, h4, h5 {
-  color: #1a3d7c;
+/* Etiquetas fuera de bloques (Commit, Observaciones) sobre fondo azul */
+body > .container label,
+body > .container-fluid label,
+.container > .mb-3 > label,
+.container > div > .form-label {
+  color: #ffffff !important;
 }
 
-/* Los títulos dentro del navbar blanco se mantienen */
-.navbar-brand, .navbar .text-white {
-  color: #fff !important;
+/* Título "Reporte del..." */
+.container h4,
+.container .mb-3 > h4 {
+  color: #ffffff !important;
 }
 
-/* Los labels dentro de tarjetas blancas son azules, pero en fondo azul son blancos */
-#vista-splash .subtitulo,
-#vista-splash h1 {
-  color: #fff !important;
+/* Banner de precarga */
+#banner-precarga {
+  color: #664d03 !important;
 }
