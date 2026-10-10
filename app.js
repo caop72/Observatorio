@@ -187,9 +187,16 @@ window.addEventListener('DOMContentLoaded', () => {
   const usuario = localStorage.getItem('oep_usuario');
   if (token && usuario) {
     const u = JSON.parse(usuario);
-    document.getElementById('panel-nombre').textContent = u.nombres + ' ' + u.apellidos;
-    document.getElementById('panel-cargo').textContent = u.cargo;
-    irA('panel');
+    const cargosValidacion = ['Gerente de Estado', 'Gerente de Región', 'CNC', 'Despacho', 'Observatorio'];
+    if (u.cargo === 'Jefe de OPT') {
+      location.href = 'reporte.html';
+    } else if (cargosValidacion.includes(u.cargo)) {
+      location.href = 'validacion.html';
+    } else {
+      document.getElementById('panel-nombre').textContent = u.nombres + ' ' + u.apellidos;
+      document.getElementById('panel-cargo').textContent = u.cargo;
+      irA('panel');
+    }
   }
 });
 // ============================================================
