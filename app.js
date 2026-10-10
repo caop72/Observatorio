@@ -62,7 +62,11 @@ async function hacerLogin() {
     document.getElementById('panel-nombre').textContent =
       r.usuario.nombres + ' ' + r.usuario.apellidos;
     document.getElementById('panel-cargo').textContent = r.usuario.cargo;
-    irA('panel');
+       if (r.usuario.cargo === 'Jefe de OPT') {
+      location.href = 'reporte.html';
+    } else {
+      irA('panel');
+    }
   } catch (e) {
     msg.textContent = 'Error de conexión: ' + e.message;
   }
