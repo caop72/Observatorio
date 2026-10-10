@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OEP — Carga Diaria</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <nav class="navbar navbar-dark" style="background:#1a3d7c;">
+    <div class="container-fluid">
+      <span class="navbar-brand">OEP — Carga Diaria</span>
+      <span class="text-white" id="nav-usuario"></span>
+    </div>
+  </nav>
+
+  <div class="container my-4" style="max-width:900px;">
+
+    <div id="banner-precarga" class="alert alert-warning d-none">
+      ⚠️ Valores precargados del reporte del <strong id="banner-fecha"></strong>.
+      Verifica y modifica lo que haya cambiado.
+      <button class="btn btn-sm btn-outline-dark ms-2" onclick="restaurarAnterior()">Restaurar valores</button>
+    </div>
+
+    <div id="form-reporte">
+      <h4 class="mb-3">Reporte del <span id="fecha-hoy"></span></h4>
+
+      <div id="contenedor-indicadores"></div>
+
+      <hr>
+
+      <div class="mb-3">
+        <label class="form-label">Commit breve del día *</label>
+        <input type="text" id="commit" class="form-control" maxlength="140"
+               placeholder="Ej: Operación normal sin novedades">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Observaciones (opcional)</label>
+        <textarea id="observaciones" class="form-control" rows="2"></textarea>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-secondary" onclick="enviarSinNovedades()">📋 Sin novedades</button>
+        <button class="btn btn-primary flex-grow-1" onclick="enviarReporte()">✅ Enviar reporte</button>
+      </div>
+
+      <div id="msg" class="msg-error"></div>
+    </div>
+
+  </div>
+
+  <script src="reporte.js"></script>
+</body>
+</html>
