@@ -96,6 +96,7 @@
         <input type="text" id="reg-direccion" class="form-control">
       </div>
 
+      <!-- REGIÓN / ESTADO / OPT -->
       <div class="row">
         <div class="col-md-4 mb-3">
           <label class="form-label">Región</label>
@@ -105,13 +106,29 @@
         </div>
         <div class="col-md-4 mb-3">
           <label class="form-label">Estado</label>
-          <select id="reg-estado" class="form-select">
+          <select id="reg-estado" class="form-select" onchange="cargarMunicipiosRegistro()">
             <option value="">Seleccione...</option>
           </select>
         </div>
-        <div class="col-md-4 mb-3">
-          <label class="form-label">OPT</label>
-          <input type="text" id="reg-opt" class="form-control" placeholder="Nombre OPT">
+        <div class="col-md-4 mb-3" id="bloque-opt" style="display:none;">
+          <label class="form-label">Nombre de la OPT</label>
+          <input type="text" id="reg-opt-nombre" class="form-control" placeholder="Ej: Naguanagua Centro">
+        </div>
+      </div>
+
+      <!-- MUNICIPIO / PARROQUIA (solo para Jefe de OPT) -->
+      <div class="row" id="bloque-geo-opt" style="display:none;">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Municipio</label>
+          <select id="reg-municipio" class="form-select" onchange="cargarParroquiasRegistro()">
+            <option value="">Seleccione...</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Parroquia</label>
+          <select id="reg-parroquia" class="form-select">
+            <option value="">Seleccione...</option>
+          </select>
         </div>
       </div>
 
@@ -139,7 +156,7 @@
     </div>
   </div>
 
-  <!-- PANEL (placeholder para Fase 5) -->
+  <!-- PANEL -->
   <div id="vista-panel" class="vista">
     <div class="card-form card-ancho">
       <h2>Bienvenido, <span id="panel-nombre"></span></h2>
