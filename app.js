@@ -62,11 +62,16 @@ async function hacerLogin() {
     document.getElementById('panel-nombre').textContent =
       r.usuario.nombres + ' ' + r.usuario.apellidos;
     document.getElementById('panel-cargo').textContent = r.usuario.cargo;
-       if (r.usuario.cargo === 'Jefe de OPT') {
+
+    const cargosValidacion = ['Gerente de Estado', 'Gerente de Región', 'CNC', 'Despacho', 'Observatorio'];
+    if (r.usuario.cargo === 'Jefe de OPT') {
       location.href = 'reporte.html';
+    } else if (cargosValidacion.includes(r.usuario.cargo)) {
+      location.href = 'validacion.html';
     } else {
       irA('panel');
     }
+    
   } catch (e) {
     msg.textContent = 'Error de conexión: ' + e.message;
   }
