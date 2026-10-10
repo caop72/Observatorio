@@ -92,3 +92,36 @@ body {
 hr { margin: 24px 0; }
 
 a { color: #1a3d7c; font-weight: 600; }
+
+/* ============================================
+   FIX CONTRASTE — Aplicación global
+   ============================================ */
+body {
+  color: #333;
+}
+
+.card-form, 
+.container,
+.container-fluid {
+  color: #333;
+}
+
+label, .form-label {
+  color: #1a3d7c !important;
+  font-weight: 600;
+}
+
+h1, h2, h3, h4, h5 {
+  color: #1a3d7c;
+}
+
+/* Los títulos dentro del navbar blanco se mantienen */
+.navbar-brand, .navbar .text-white {
+  color: #fff !important;
+}
+
+/* Los labels dentro de tarjetas blancas son azules, pero en fondo azul son blancos */
+#vista-splash .subtitulo,
+#vista-splash h1 {
+  color: #fff !important;
+}
