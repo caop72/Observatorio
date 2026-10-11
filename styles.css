@@ -192,3 +192,21 @@ body > .container-fluid label,
 #banner-precarga {
   color: #664d03 !important;
 }
+
+/* Labels dentro de tarjetas Bootstrap blancas son azules */
+.card label,
+.card .form-label {
+  color: #1a3d7c !important;
+  font-weight: 600;
+}
+
+/* Excepción: la página de carga diaria sigue con labels azules sobre blanco */
+#contenedor-indicadores label {
+  color: #1a3d7c !important;
+}
+
+/* Los labels sobre el fondo azul (Carga Diaria, commit, observaciones) siguen blancos */
+.container > .mb-3 > label:not(.card *),
+.container > .mb-3 > .form-label:not(.card *) {
+  color: #ffffff !important;
+}
