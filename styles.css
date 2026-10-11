@@ -174,12 +174,16 @@ a { color: #1a3d7c; font-weight: 600; }
   font-weight: 700 !important;
 }
 
-/* Etiquetas fuera de bloques (Commit, Observaciones) sobre fondo azul */
-body > .container label,
-body > .container-fluid label,
-.container > .mb-3 > label,
-.container > div > .form-label {
+/* Labels sobre el fondo azul oscuro (solo en páginas específicas) */
+.fondo-oscuro label,
+.fondo-oscuro .form-label {
   color: #ffffff !important;
+}
+
+/* Labels dentro de cards siempre azules */
+.card label,
+.card .form-label {
+  color: #1a3d7c !important;
 }
 
 /* Título "Reporte del..." */
