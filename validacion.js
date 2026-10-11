@@ -140,13 +140,22 @@ async function verDetalle(idReporte) {
   `;
 }
 
-async function accionValidar(idReporte, accion, modal) {
+async function accionValidar(idReporte, accion, boton) {
+  const modal = boton.closest('.modal');
   const token = localStorage.getItem('oep_token');
   const comentario = modal.querySelector('#comentario-val').value.trim();
 
-    const r = await api('accionValidar', { token, idReporte, tipoAccion: accion, comentario });
+  // Deshabilitar TODOS los botones del modal para evitar doble clic
+  const botones = modal.querySelectorAll('button');
+  botones.forEach(b => b.disabled = true);
+  boton.textContent = '⏳ Procesando...';
+
+  const r = await api('accionValidar', { token, idReporte, tipoAccion: accion, comentario });
+
   if (!r.ok) {
     alert('Error: ' + r.error);
+    botones.forEach(b => b.disabled = false);
+    boton.textContent = accion === 'VALIDA' ? '✅ Validar' : '🚫 Bloquear';
     return;
   }
 
@@ -154,6 +163,7 @@ async function accionValidar(idReporte, accion, modal) {
   modal.remove();
   cargarReportes();
 }
+
 async function cerrarSesion() {
   const token = localStorage.getItem('oep_token');
   try {
