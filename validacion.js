@@ -132,8 +132,8 @@ async function verDetalle(idReporte) {
     <div class="w-100">
       <textarea id="comentario-val" class="form-control mb-2" rows="2" placeholder="Comentario (obligatorio para Gerente/CNC)"></textarea>
       <div class="d-flex gap-2">
-        <button class="btn btn-success flex-grow-1" onclick="accionValidar('${idReporte}','VALIDA', this.closest('.modal'))">✅ Validar</button>
-        <button class="btn btn-danger flex-grow-1" onclick="accionValidar('${idReporte}','BLOQUEA', this.closest('.modal'))">🚫 Bloquear</button>
+        <button class="btn btn-success flex-grow-1" onclick="accionValidar('${idReporte}','VALIDA', this)">✅ Validar</button>
+        <button class="btn btn-danger flex-grow-1" onclick="accionValidar('${idReporte}','BLOQUEA', this)">🚫 Bloquear</button>
         <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Cerrar</button>
       </div>
     </div>
