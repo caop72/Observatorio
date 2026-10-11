@@ -51,7 +51,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 try {
   const d = new Date(rUlt.ultimo.fecha);
   if (!isNaN(d.getTime())) {
-    fechaLimpia = d.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const f = d.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const h = d.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', hour12: false });
+    fechaLimpia = f + ' a las ' + h;
   }
 } catch (e) {}
 document.getElementById('banner-fecha').textContent = fechaLimpia;
