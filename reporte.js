@@ -47,7 +47,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     VALORES_PREVIOS = rUlt.ultimo.valores;
     VALORES_ACTUALES = JSON.parse(JSON.stringify(VALORES_PREVIOS));
     document.getElementById('banner-precarga').classList.remove('d-none');
-    document.getElementById('banner-fecha').textContent = rUlt.ultimo.fecha;
+   let fechaLimpia = rUlt.ultimo.fecha;
+try {
+  const d = new Date(rUlt.ultimo.fecha);
+  if (!isNaN(d.getTime())) {
+    fechaLimpia = d.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+} catch (e) {}
+document.getElementById('banner-fecha').textContent = fechaLimpia;
   } else {
     VALORES_ACTUALES = {};
   }
