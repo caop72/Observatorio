@@ -156,7 +156,7 @@ function renderTabla(reportes) {
   reportes.forEach(r => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${r.fecha}</td>
+      <td>${formatearFecha(r.fecha)}</td>
       <td><strong>${r.idReporte}</strong></td>
       <td>${r.nombreOpt}</td>
       <td>${r.estado || '-'}</td>
