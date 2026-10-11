@@ -48,9 +48,9 @@ async function cargarHistorial() {
     return;
   }
 
-  let html = '<div class="card"><div class="table-responsive"><table class="table table-striped mb-0">';
+    let html = '<div class="card"><div class="table-responsive"><table class="table table-striped mb-0">';
   html += '<thead class="table-dark"><tr>';
-  html += '<th>Fecha</th><th>Reporte</th><th>OPT</th><th>Rol</th><th>Acción</th><th>Comentario</th><th>Estado</th>';
+  html += '<th>Fecha</th><th>Reporte</th><th>OPT</th><th>Rol</th><th>Acción</th><th>Comentario</th><th>Estado</th><th>PDF</th>';
   html += '</tr></thead><tbody>';
 
   r.acciones.forEach(a => {
@@ -70,6 +70,9 @@ async function cargarHistorial() {
       <td><span class="badge ${badgeColor}">${accion}</span></td>
       <td><small>${a.comentario || '-'}</small></td>
       <td><small>${a.estadoFinal || ''}</small></td>
+      <td>
+        <button class="btn btn-sm btn-outline-danger" onclick="descargarPdf('${a.idReporte}')">📄</button>
+      </td>
     </tr>`;
   });
 
@@ -77,6 +80,36 @@ async function cargarHistorial() {
   lista.innerHTML = html;
 }
 
+async function descargarPdf(idReporte) {
+  const token = localStorage.getItem('oep_token');
+  if (!token) { alert('Sesión expirada'); return; }
+
+  if (!confirm('¿Generar PDF del reporte ' + idReporte + '? Puede tardar 5-10 segundos.')) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳';
+
+  try {
+    const r = await api('generarPdfReporte', { token, idReporte });
+
+    if (!r.ok) {
+      alert('Error: ' + r.error);
+      btn.disabled = false;
+      btn.textContent = '📄';
+      return;
+    }
+
+    window.open(r.pdfUrl, '_blank');
+    btn.disabled = false;
+    btn.textContent = '📄';
+  } catch (e) {
+    alert('Error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '📄';
+  }
+}
+ 
 async function cerrarSesion() {
   const token = localStorage.getItem('oep_token');
   try {
