@@ -214,3 +214,8 @@ a { color: #1a3d7c; font-weight: 600; }
 .container > .mb-3 > .form-label:not(.card *) {
   color: #ffffff !important;
 }
+/* Labels sobre fondo azul oscuro */
+.label-oscuro {
+  color: #ffffff !important;
+  font-weight: 700;
+}
