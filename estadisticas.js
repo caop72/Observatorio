@@ -199,3 +199,14 @@ async function cerrarSesion() {
   sessionStorage.clear();
   location.href = 'index.html';
 }
+
+function formatearFecha(f) {
+  if (!f) return '-';
+  try {
+    const d = new Date(f);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+  } catch (e) {}
+  return f;
+}
