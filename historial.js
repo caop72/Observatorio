@@ -86,6 +86,12 @@ async function descargarPdf(idReporte) {
 
   if (!confirm('¿Generar PDF del reporte ' + idReporte + '? Puede tardar 5-10 segundos.')) return;
 
+  // Abrir ventana vacía INMEDIATAMENTE (mantiene el contexto del clic)
+  const ventana = window.open('', '_blank');
+  if (ventana) {
+    ventana.document.write('<html><head><title>Generando PDF...</title></head><body style="font-family:sans-serif;text-align:center;padding:50px;"><h3>⏳ Generando PDF del reporte ' + idReporte + '...</h3><p>Por favor espera 5-10 segundos.</p></body></html>');
+  }
+
   const btn = event.target;
   btn.disabled = true;
   btn.textContent = '⏳';
@@ -95,16 +101,23 @@ async function descargarPdf(idReporte) {
 
     if (!r.ok) {
       alert('Error: ' + r.error);
+      if (ventana) ventana.close();
       btn.disabled = false;
       btn.textContent = '📄';
       return;
     }
 
-    window.open(r.pdfUrl, '_blank');
+    if (ventana) {
+      ventana.location.href = r.pdfUrl;
+    } else {
+      alert('El navegador bloqueó la ventana. Abre este link manualmente:\n' + r.pdfUrl);
+    }
+
     btn.disabled = false;
     btn.textContent = '📄';
   } catch (e) {
     alert('Error: ' + e.message);
+    if (ventana) ventana.close();
     btn.disabled = false;
     btn.textContent = '📄';
   }
