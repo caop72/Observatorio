@@ -18,6 +18,7 @@
         <a href="estadisticas.html" class="btn btn-outline-light btn-sm">Estadísticas</a>
         <a href="historial.html" class="btn btn-outline-light btn-sm">Mis acciones</a>
         <a href="perfil.html" class="btn btn-outline-light btn-sm">Mi perfil</a>
+        <a href="jerarquia.html" id="nav-jerarquia" class="btn btn-outline-light btn-sm" style="display:none;">Jerarquía</a>
         <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar sesión</button>
       </div>
     </div>
@@ -159,5 +160,18 @@
   </div>
 
   <script src="estadisticas.js"></script>
+    <script>
+    (function(){
+      try {
+        var raw = localStorage.getItem('oep_usuario') || localStorage.getItem('usuario') || localStorage.getItem('sesion') || '{}';
+        var u = JSON.parse(raw);
+        var rol = (u.rol || u.cargo || u.Rol || u.Cargo || '').toString();
+        var permitidos = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado','Jefe de OPT'];
+        if (permitidos.indexOf(rol) !== -1) {
+          document.getElementById('nav-jerarquia').style.display = '';
+        }
+      } catch(e) {}
+    })();
+  </script>
 </body>
 </html>
