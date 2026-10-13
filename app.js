@@ -81,7 +81,11 @@ async function hacerLogin() {
 // LOGOUT
 // ============================================================
 async function hacerLogout() {
-  const token = localStorage.getItem('oep_token');
+  let token = null;
+  try {
+    const u = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
+    if (u && u.token) token = u.token;
+  } catch(e) {}
   if (token) await llamarAPI('logout', { token });
   localStorage.clear();
   irA('splash');
