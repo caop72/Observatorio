@@ -264,19 +264,19 @@ body {
 }
 
 /* ============================================================
-   JERARQUÍA (Fase J.5 v2)
+   JERARQUÍA (Fase J.5 v3 - Navegación secuencial)
    ============================================================ */
 .fila-ente {
   transition: background-color 0.15s ease;
+  user-select: none;
 }
 
 .fila-ente:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: rgba(13, 110, 253, 0.08);
 }
 
-.fila-ente.activa {
-  background-color: rgba(13, 110, 253, 0.12);
-  border-left: 3px solid #0d6efd;
+.fila-ente:active {
+  background-color: rgba(13, 110, 253, 0.15);
 }
 
 .nombre-ente {
@@ -289,12 +289,6 @@ body {
   border-bottom: 1px dotted #adb5bd;
   margin: 0 8px;
   transform: translateY(-4px);
-}
-
-.lupa {
-  padding: 2px 8px;
-  font-size: 0.85rem;
-  border-radius: 4px;
 }
 
 .semaforo-punto {
@@ -324,12 +318,15 @@ body {
   border: none;
 }
 
-.card-header {
-  font-size: 0.95rem;
+.breadcrumb {
+  background-color: transparent;
+  padding: 0;
 }
 
-@media (max-width: 768px) {
-  .row.g-3 > .col-md-4 {
-    margin-bottom: 12px;
-  }
+.breadcrumb-item + .breadcrumb-item::before {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.card-header {
+  font-size: 0.95rem;
 }
