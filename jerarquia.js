@@ -8,7 +8,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzI
 let TOKEN = '';
 let USUARIO = null;
 let ARBOL = [];
-let NIVEL = 0;                    // 0=Regiones, 1=Estados, 2=OPTs
+let NIVEL = 0;
 let REGION_SEL = null;
 let ESTADO_SEL = null;
 
@@ -16,20 +16,35 @@ let ESTADO_SEL = null;
 // INICIALIZACIÓN
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  TOKEN = localStorage.getItem('oep_token') || localStorage.getItem('token') || '';
-  const userRaw = localStorage.getItem('oep_usuario') || localStorage.getItem('usuario');
-  USUARIO = userRaw ? JSON.parse(userRaw) : null;
+  let U = null;
+  try { U = JSON.parse(localStorage.getItem('oep_usuario') || 'null'); } catch(e) {}
+  if (!U || !U.token) { window.location.href = 'index.html'; return; }
 
-  if (!TOKEN) { window.location.href = 'index.html'; return; }
+  USUARIO = U;
+  TOKEN = U.token;
 
-  if (USUARIO) {
-    document.getElementById('infoCargo').textContent =
-      (USUARIO.nombres || '') + ' — ' + (USUARIO.cargo || '');
-  }
+  document.getElementById('infoCargo').textContent =
+    (USUARIO.nombres || '') + ' — ' + (USUARIO.cargo || '');
 
-  document.getElementById('btnSalir').addEventListener('click', cerrarSesion);
   cargarArbol();
 });
+
+// ============================================================
+// CERRAR SESIÓN (unificado)
+// ============================================================
+function cerrarSesion() {
+  const t = TOKEN;
+  localStorage.removeItem('oep_usuario');
+  if (t) {
+    fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'logout', token: t }),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    }).finally(() => { window.location.href = 'index.html'; });
+  } else {
+    window.location.href = 'index.html';
+  }
+}
 
 // ============================================================
 // API
@@ -65,7 +80,7 @@ async function cargarArbol() {
 }
 
 // ============================================================
-// RENDER PRINCIPAL (según NIVEL)
+// RENDER PRINCIPAL
 // ============================================================
 function renderNivel() {
   const cargo = USUARIO ? USUARIO.cargo : '';
@@ -73,25 +88,15 @@ function renderNivel() {
   const titulo = document.getElementById('tituloNivel');
   const barra = document.getElementById('barraNavegacion');
 
-  // ---- NIVEL 0 ----
   if (NIVEL === 0) {
     titulo.textContent = (cargo === 'Gerente de Estado') ? 'OPTs' :
                          (cargo === 'Gerente de Región') ? 'Estados' :
                          (cargo === 'Jefe de OPT') ? 'Mi OPT' : 'Regiones';
-
-    // Ajustar nivel de inicio según rol
-    if (cargo === 'Gerente de Región') {
-      // Ya muestra Estados directo
-    } else if (cargo === 'Gerente de Estado' || cargo === 'Jefe de OPT') {
-      // Muestra OPTs directo
-    }
-
     barra.style.display = 'none';
     renderListaNivel0(cargo);
     return;
   }
 
-  // ---- NIVEL 1 (Estados) ----
   if (NIVEL === 1) {
     titulo.textContent = 'Estados de ' + REGION_SEL;
     barra.style.display = '';
@@ -100,7 +105,6 @@ function renderNivel() {
     return;
   }
 
-  // ---- NIVEL 2 (OPTs) ----
   if (NIVEL === 2) {
     titulo.textContent = 'OPTs de ' + ESTADO_SEL;
     barra.style.display = '';
@@ -113,7 +117,6 @@ function renderNivel() {
 function renderListaNivel0(cargo) {
   const cont = document.getElementById('contenedorLista');
 
-  // Jefe de OPT: buscar su OPT dentro del árbol
   if (cargo === 'Jefe de OPT') {
     const optUsuario = USUARIO.opt || '';
     let optEncontrada = null;
@@ -128,7 +131,6 @@ function renderListaNivel0(cargo) {
     return;
   }
 
-  // Gerente de Estado: mostrar sus OPTs (buscando el estado del usuario)
   if (cargo === 'Gerente de Estado') {
     const estadoUsuario = USUARIO.estado || '';
     let opts = [];
@@ -143,7 +145,6 @@ function renderListaNivel0(cargo) {
     return;
   }
 
-  // Gerente de Región: mostrar Estados directamente
   if (cargo === 'Gerente de Región') {
     const region = ARBOL[0];
     if (!region || !region.estados.length) {
@@ -155,7 +156,6 @@ function renderListaNivel0(cargo) {
     return;
   }
 
-  // CNC / Despacho / Observatorio / Presidencia: mostrar Regiones
   if (!ARBOL.length) {
     cont.innerHTML = '<div class="text-center text-muted py-4 small">Sin regiones.</div>';
     return;
@@ -387,15 +387,4 @@ function escapeHtml(s) {
 
 function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/'/g, "\\'");
-}
-
-function cerrarSesion() {
-  const t = TOKEN;
-  localStorage.removeItem('oep_token');
-  localStorage.removeItem('token');
-  localStorage.removeItem('oep_usuario');
-  localStorage.removeItem('usuario');
-  apiGet({ accion: 'logout', token: t }).finally(() => {
-    window.location.href = 'index.html';
-  });
 }
