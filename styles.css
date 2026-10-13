@@ -219,3 +219,42 @@ a { color: #1a3d7c; font-weight: 600; }
   color: #ffffff !important;
   font-weight: 700;
 }
+/* ============================================================
+   SEMÁFORO JERÁRQUICO (Fase J)
+   ============================================================ */
+.semaforo-fila {
+  padding: 6px 4px;
+  border-radius: 6px;
+}
+
+.semaforo-puntos {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.semaforo-punto {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: help;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+.semaforo-punto.verde   { background-color: #28a745; }
+.semaforo-punto.naranja { background-color: #fd7e14; }
+.semaforo-punto.rojo    { background-color: #dc3545; }
+.semaforo-punto.blanco  { background-color: #f8f9fa; border: 1px solid #ced4da; }
+
+.semaforo-fila .fw-semibold {
+  font-size: 0.95rem;
+}
+
+.semaforo-punto:hover {
+  transform: scale(1.3);
+  transition: transform 0.15s ease;
+}
