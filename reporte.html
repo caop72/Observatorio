@@ -27,31 +27,78 @@
   <div class="container my-4" style="max-width:900px;">
 
     <div id="banner-precarga" class="alert alert-warning d-none">
-      ⚠️ Valores precargados del reporte del <strong id="banner-fecha"></strong>.
+      ⚠️ Datos precargados del reporte del <strong id="banner-fecha"></strong>.
       Verifica y modifica lo que haya cambiado.
       <button class="btn btn-sm btn-outline-dark ms-2" onclick="restaurarAnterior()">Restaurar valores</button>
     </div>
 
     <div id="form-reporte">
-      <h4 class="mb-3">Reporte del <span id="fecha-hoy"></span></h4>
+      <h4 class="mb-3 text-white">Reporte del <span id="fecha-hoy"></span></h4>
 
-      <div id="spinner-carga" class="text-center py-5">
-        <div class="spinner-border text-light" role="status"></div>
-        <p class="text-white mt-2">Cargando indicadores...</p>
+      <!-- BLOQUE 1: ESTATUS DEL DÍA -->
+      <div class="card mb-3 shadow-sm">
+        <div class="card-header bg-secondary text-white"><strong>1. Estatus del día</strong></div>
+        <div class="card-body">
+
+          <div class="mb-3">
+            <label class="form-label">Estatus *</label>
+            <select id="estatus" class="form-select" onchange="toggleCausa()">
+              <option value="">Seleccione...</option>
+              <option value="OPERATIVA">Operativa</option>
+              <option value="INOPERATIVA">Inoperativa</option>
+              <option value="CIERRE_TECNICO">Cierre Técnico</option>
+            </select>
+          </div>
+
+          <div class="mb-3" id="bloque-causa" style="display:none;">
+            <label class="form-label">Causa *</label>
+            <textarea id="causa" class="form-control" rows="2"
+                      placeholder="Explica brevemente el motivo"></textarea>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">Personal activo *</label>
+              <input type="number" id="personal-activo" class="form-control" min="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Personal vacante *</label>
+              <input type="number" id="personal-vacante" class="form-control" min="0">
+            </div>
+          </div>
+
+        </div>
       </div>
-      <div id="contenedor-indicadores"></div>
 
-      <hr>
+      <!-- BLOQUE 2: NOVEDADES -->
+      <div class="card mb-3 shadow-sm">
+        <div class="card-header bg-secondary text-white"><strong>2. Novedades (opcional)</strong></div>
+        <div class="card-body">
 
-      <div class="mb-3">
-        <label class="form-label label-oscuro">Commit breve del día *</label>
-        <input type="text" id="commit" class="form-control" maxlength="140"
-               placeholder="Ej: Operación normal sin novedades">
-      </div>
+          <div class="mb-3">
+            <label class="form-label">Vehículos</label>
+            <textarea id="novedad-vehiculos" class="form-control" rows="2"
+                      placeholder="Ej: Un vehículo fuera de servicio"></textarea>
+          </div>
 
-      <div class="mb-3">
-        <label class="form-label label-oscuro">Observaciones (opcional)</label>
-        <textarea id="observaciones" class="form-control" rows="2"></textarea>
+          <div class="mb-3">
+            <label class="form-label">Infraestructura</label>
+            <textarea id="novedad-infraestructura" class="form-control" rows="2"
+                      placeholder="Ej: Filtración en techo"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Conectividad</label>
+            <textarea id="novedad-conectividad" class="form-control" rows="2"
+                      placeholder="Ej: Intermitencia en internet"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Observaciones generales</label>
+            <textarea id="observaciones" class="form-control" rows="2"></textarea>
+          </div>
+
+        </div>
       </div>
 
       <div class="d-flex gap-2">
@@ -59,12 +106,12 @@
         <button class="btn btn-primary flex-grow-1" onclick="enviarReporte()">✅ Enviar reporte</button>
       </div>
 
-      <div id="msg" class="msg-error"></div>
+      <div id="msg" class="msg-error mt-2"></div>
     </div>
 
   </div>
 
-  <script src="reporte.js"></script>
+  <script src="reporte.js?v=3"></script>
   <script>
     (function(){
       try {
