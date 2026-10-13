@@ -40,5 +40,18 @@
   </div>
 
   <script src="historial.js"></script>
+    <script>
+    (function(){
+      try {
+        var U = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
+        if (!U) return;
+        var rol = (U.rol || U.cargo || '').toString();
+        var permitidos = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado','Jefe de OPT'];
+        if (permitidos.indexOf(rol) !== -1) {
+          document.getElementById('nav-jerarquia').style.display = '';
+        }
+      } catch(e) {}
+    })();
+  </script>
 </body>
 </html>
