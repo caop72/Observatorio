@@ -99,7 +99,7 @@ function renderNivel() {
 
   if (NIVEL === 1) {
     titulo.textContent = 'Estados de ' + REGION_SEL;
-    barra.style.display = '';
+    barra.style.display = 'flex';
     actualizarMigas();
     renderListaEstados();
     return;
@@ -107,7 +107,7 @@ function renderNivel() {
 
   if (NIVEL === 2) {
     titulo.textContent = 'OPTs de ' + ESTADO_SEL;
-    barra.style.display = '';
+    barra.style.display = 'flex';
     actualizarMigas();
     renderListaOpts();
     return;
