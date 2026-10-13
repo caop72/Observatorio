@@ -1,12 +1,14 @@
 /**************************************************************
- * OEP - Panel Jerárquico de Escudriñamiento
+ * OEP - Panel Jerárquico de Escudriñamiento (Fase J.5 v2)
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
 
 let TOKEN = '';
 let USUARIO = null;
-let SEMAFOROS = null;
+let ARBOL = [];
+let REGION_SEL = null;
+let ESTADO_SEL = null;
 
 // ============================================================
 // INICIALIZACIÓN
@@ -28,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btnSalir').addEventListener('click', cerrarSesion);
 
-  cargarSemaforos();
+  cargarArbol();
 });
 
 // ============================================================
@@ -42,67 +44,220 @@ async function apiGet(params) {
 }
 
 // ============================================================
-// SEMÁFOROS
+// CARGA DEL ÁRBOL
 // ============================================================
-async function cargarSemaforos() {
-  const cont = document.getElementById('contenedorSemaforos');
-  cont.innerHTML = '<div class="text-center text-muted py-4">Cargando semáforos...</div>';
+async function cargarArbol() {
+  const col1 = document.getElementById('columna1');
+  col1.innerHTML = '<div class="text-center text-muted py-4">Cargando...</div>';
 
   try {
-    const data = await apiGet({ accion: 'obtenerSemaforos', token: TOKEN });
+    const data = await apiGet({ accion: 'obtenerArbolJerarquico', token: TOKEN });
     if (!data.ok) {
-      cont.innerHTML = '<div class="alert alert-danger">' + (data.error || 'Error') + '</div>';
+      col1.innerHTML = '<div class="alert alert-danger m-3">' + (data.error || 'Error') + '</div>';
       return;
     }
-    SEMAFOROS = data;
-    renderSemaforos(data);
+    ARBOL = data.arbol || [];
+    configurarTitulos(data.cargo);
+    renderColumna1();
   } catch (e) {
-    cont.innerHTML = '<div class="alert alert-danger">Error de red: ' + e.message + '</div>';
+    col1.innerHTML = '<div class="alert alert-danger m-3">Error de red: ' + e.message + '</div>';
   }
 }
 
-function renderSemaforos(data) {
-  const cont = document.getElementById('contenedorSemaforos');
-  if (!data.entes || data.entes.length === 0) {
-    cont.innerHTML = '<div class="text-center text-muted py-4">No hay entes para mostrar.</div>';
+function configurarTitulos(cargo) {
+  if (cargo === 'Gerente de Estado') {
+    document.getElementById('tituloCol1').textContent = 'OPTs';
+    document.getElementById('columna1').parentElement.parentElement.className = 'col-md-12';
+    document.getElementById('columna2').parentElement.parentElement.style.display = 'none';
+    document.getElementById('columna3').parentElement.parentElement.style.display = 'none';
+  } else if (cargo === 'Gerente de Región') {
+    document.getElementById('tituloCol1').textContent = 'Estados';
+    document.getElementById('tituloCol2').textContent = 'OPTs';
+    document.getElementById('columna3').parentElement.parentElement.style.display = 'none';
+  } else if (cargo === 'Jefe de OPT') {
+    document.getElementById('tituloCol1').textContent = 'Mi OPT';
+    document.getElementById('columna1').parentElement.parentElement.className = 'col-md-12';
+    document.getElementById('columna2').parentElement.parentElement.style.display = 'none';
+    document.getElementById('columna3').parentElement.parentElement.style.display = 'none';
+  }
+  // CNC / Despacho / Observatorio / Presidencia: 3 columnas por defecto
+}
+
+// ============================================================
+// RENDER COLUMNA 1
+// ============================================================
+function renderColumna1() {
+  const col1 = document.getElementById('columna1');
+  const cargo = USUARIO ? USUARIO.cargo : '';
+
+  // Caso Gerente de Estado: mostrar OPTs directo (columna 1 = OPTs)
+  if (cargo === 'Gerente de Estado') {
+    const estado = ARBOL[0] && ARBOL[0].estados[0];
+    if (!estado || !estado.opts.length) {
+      col1.innerHTML = '<div class="text-center text-muted py-4 small">Sin OPTs registradas.</div>';
+      return;
+    }
+    col1.innerHTML = estado.opts.map(o => renderFilaOpt(o)).join('');
     return;
   }
 
-  let html = '';
-  data.entes.forEach(ente => {
-    html += `
-      <div class="semaforo-fila d-flex align-items-center justify-content-between mb-3">
-        <div class="flex-grow-1">
-          <div class="fw-semibold mb-1">${escapeHtml(ente.nombre)}</div>
-          <div class="semaforo-puntos">
-            ${ente.dias.map(d => renderPunto(d)).join('')}
-          </div>
-        </div>
-        <button class="btn btn-sm btn-outline-primary ms-3"
-                onclick="verHistorial('${escapeAttr(ente.tipo)}','${escapeAttr(ente.id)}','${escapeAttr(ente.nombre)}')">
-          Ver historial
-        </button>
+  // Caso Jefe de OPT: mostrar su OPT
+  if (cargo === 'Jefe de OPT') {
+    const estado = ARBOL[0] && ARBOL[0].estados[0];
+    if (!estado || !estado.opts.length) {
+      col1.innerHTML = '<div class="text-center text-muted py-4 small">Sin datos.</div>';
+      return;
+    }
+    col1.innerHTML = estado.opts.map(o => renderFilaOpt(o)).join('');
+    return;
+  }
+
+  // Caso Gerente de Región: mostrar Estados directo
+  if (cargo === 'Gerente de Región') {
+    const region = ARBOL[0];
+    if (!region || !region.estados.length) {
+      col1.innerHTML = '<div class="text-center text-muted py-4 small">Sin estados.</div>';
+      return;
+    }
+    col1.innerHTML = region.estados.map(e => renderFilaEstado(e, region.nombre)).join('');
+    return;
+  }
+
+  // Caso global (Observatorio, CNC, Despacho, Presidencia): mostrar Regiones
+  if (!ARBOL.length) {
+    col1.innerHTML = '<div class="text-center text-muted py-4 small">Sin regiones registradas.</div>';
+    return;
+  }
+  col1.innerHTML = ARBOL.map(r => renderFilaRegion(r)).join('');
+}
+
+// ============================================================
+// FILAS
+// ============================================================
+function renderFilaRegion(region) {
+  return `
+    <div class="fila-ente d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
+         data-region="${escapeAttr(region.nombre)}">
+      <div class="d-flex align-items-center gap-2 flex-grow-1">
+        <span class="nombre-ente">${escapeHtml(region.nombre)}</span>
+        <span class="puntos-dotted"></span>
+        ${renderIndicador(region.color)}
+        ${renderContadorInactivas(region.inactivas)}
       </div>
-      <hr>
-    `;
-  });
-  cont.innerHTML = html;
+      <button class="btn btn-sm btn-outline-primary lupa"
+              onclick="seleccionarRegion('${escapeAttr(region.nombre)}')"
+              title="Ver Estados">🔍</button>
+    </div>
+  `;
 }
 
-function renderPunto(dia) {
-  const fecha = dia.fecha;
-  const partes = fecha.split('-');
-  const fechaFmt = partes[2] + '/' + partes[1];
-  const titulo = `${fecha} — ${dia.reportaron}/${dia.total} OPTs reportaron`;
-  return `<span class="semaforo-punto ${dia.color}" title="${titulo}"></span>`;
+function renderFilaEstado(estado, regionNombre) {
+  return `
+    <div class="fila-ente d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
+         data-estado="${escapeAttr(estado.nombre)}">
+      <div class="d-flex align-items-center gap-2 flex-grow-1">
+        <span class="nombre-ente">${escapeHtml(estado.nombre)}</span>
+        <span class="puntos-dotted"></span>
+        ${renderIndicador(estado.color)}
+        ${renderContadorInactivas(estado.inactivas)}
+      </div>
+      <button class="btn btn-sm btn-outline-primary lupa"
+              onclick="seleccionarEstado('${escapeAttr(regionNombre)}','${escapeAttr(estado.nombre)}')"
+              title="Ver OPTs">🔍</button>
+    </div>
+  `;
+}
+
+function renderFilaOpt(opt) {
+  return `
+    <div class="fila-ente d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
+         data-opt="${escapeAttr(opt.id)}" style="cursor:pointer;"
+         onclick="abrirHistorialOpt('${escapeAttr(opt.id)}','${escapeAttr(opt.nombre)}')">
+      <div class="d-flex align-items-center gap-2 flex-grow-1">
+        <span class="nombre-ente">${escapeHtml(opt.nombre)} <small class="text-muted">(${escapeHtml(opt.id)})</small></span>
+        <span class="puntos-dotted"></span>
+        ${renderIndicador(opt.color)}
+      </div>
+      <span class="badge bg-light text-dark small">Ver historial</span>
+    </div>
+  `;
 }
 
 // ============================================================
-// HISTORIAL POR ENTE
+// INDICADORES
 // ============================================================
-async function verHistorial(tipoEnte, idEnte, nombreEnte) {
+function renderIndicador(color) {
+  return `<span class="semaforo-punto ${color}" title="${tituloColor(color)}"></span>`;
+}
+
+function renderContadorInactivas(n) {
+  if (!n || n <= 0) return '';
+  return `<span class="semaforo-punto naranja-contador" title="${n} OPTs inactivas">${n}</span>`;
+}
+
+function tituloColor(color) {
+  const map = {
+    verde: 'Sin novedad',
+    amarillo: 'Por reparar (objetado)',
+    rojo: 'Sin reportar',
+    blanco: 'Aún en plazo',
+    naranja: 'Inactiva'
+  };
+  return map[color] || color;
+}
+
+// ============================================================
+// SELECCIÓN / NAVEGACIÓN
+// ============================================================
+function seleccionarRegion(nombreRegion) {
+  REGION_SEL = nombreRegion;
+  ESTADO_SEL = null;
+
+  // Marcar fila seleccionada
+  document.querySelectorAll('#columna1 .fila-ente').forEach(el => el.classList.remove('activa'));
+  const fila = document.querySelector(`#columna1 .fila-ente[data-region="${cssEscape(nombreRegion)}"]`);
+  if (fila) fila.classList.add('activa');
+
+  const region = ARBOL.find(r => r.nombre === nombreRegion);
+  if (!region) return;
+
+  const col2 = document.getElementById('columna2');
+  if (!region.estados.length) {
+    col2.innerHTML = '<div class="text-center text-muted py-4 small">Sin estados.</div>';
+    return;
+  }
+  col2.innerHTML = region.estados.map(e => renderFilaEstado(e, region.nombre)).join('');
+
+  document.getElementById('columna3').innerHTML =
+    '<div class="text-center text-muted py-4 small">Selecciona un estado</div>';
+}
+
+function seleccionarEstado(nombreRegion, nombreEstado) {
+  ESTADO_SEL = nombreEstado;
+
+  document.querySelectorAll('#columna2 .fila-ente').forEach(el => el.classList.remove('activa'));
+  const fila = document.querySelector(`#columna2 .fila-ente[data-estado="${cssEscape(nombreEstado)}"]`);
+  if (fila) fila.classList.add('activa');
+
+  const region = ARBOL.find(r => r.nombre === nombreRegion);
+  if (!region) return;
+  const estado = region.estados.find(e => e.nombre === nombreEstado);
+  if (!estado) return;
+
+  const col3 = document.getElementById('columna3');
+  if (!estado.opts.length) {
+    col3.innerHTML = '<div class="text-center text-muted py-4 small">Sin OPTs.</div>';
+    return;
+  }
+  col3.innerHTML = estado.opts.map(o => renderFilaOpt(o)).join('');
+}
+
+// ============================================================
+// HISTORIAL DE OPT
+// ============================================================
+async function abrirHistorialOpt(idOpt, nombreOpt) {
   const modal = new bootstrap.Modal(document.getElementById('modalHistorial'));
-  document.getElementById('modalTitulo').textContent = 'Historial — ' + nombreEnte;
+  document.getElementById('modalTitulo').textContent = 'Historial — ' + nombreOpt + ' (' + idOpt + ')';
   document.getElementById('contenidoHistorial').innerHTML =
     '<div class="text-center text-muted py-4">Cargando...</div>';
   modal.show();
@@ -111,8 +266,8 @@ async function verHistorial(tipoEnte, idEnte, nombreEnte) {
     const data = await apiGet({
       accion: 'obtenerHistorialEnte',
       token: TOKEN,
-      tipoEnte: tipoEnte,
-      idEnte: idEnte
+      tipoEnte: 'OPT',
+      idEnte: idOpt
     });
 
     if (!data.ok) {
@@ -130,7 +285,7 @@ async function verHistorial(tipoEnte, idEnte, nombreEnte) {
 
 function renderHistorial(acciones) {
   const cont = document.getElementById('contenidoHistorial');
-  if (acciones.length === 0) {
+  if (!acciones.length) {
     cont.innerHTML = '<div class="text-center text-muted py-4">No hay acciones registradas.</div>';
     return;
   }
@@ -151,7 +306,6 @@ function renderHistorial(acciones) {
         </thead>
         <tbody>
   `;
-
   acciones.forEach(a => {
     html += `
       <tr>
@@ -165,7 +319,6 @@ function renderHistorial(acciones) {
       </tr>
     `;
   });
-
   html += '</tbody></table></div>';
   cont.innerHTML = html;
 }
@@ -212,6 +365,10 @@ function escapeHtml(s) {
 
 function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/'/g, "\\'");
+}
+
+function cssEscape(s) {
+  return String(s == null ? '' : s).replace(/"/g, '\\"');
 }
 
 function cerrarSesion() {
