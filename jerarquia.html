@@ -23,56 +23,36 @@
   </nav>
 
   <!-- ENCABEZADO -->
-  <div class="container-fluid my-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 class="mb-0">Panel Jerárquico de Escudriñamiento</h4>
+  <div class="container-fluid my-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Panel Jerárquico</h5>
       <small class="text-white-50" id="infoCargo"></small>
     </div>
 
     <!-- LEYENDA -->
-    <div class="d-flex flex-wrap gap-3 small text-white-50 mb-3">
+    <div class="d-flex flex-wrap gap-2 small text-white-50 mb-3">
       <span><span class="semaforo-punto verde"></span> Sin novedad</span>
       <span><span class="semaforo-punto amarillo"></span> Por reparar</span>
       <span><span class="semaforo-punto rojo"></span> Sin reportar</span>
-      <span><span class="semaforo-punto blanco"></span> Aún en plazo</span>
-      <span><span class="semaforo-punto naranja-contador">0</span> OPTs inactivas</span>
+      <span><span class="semaforo-punto blanco"></span> En plazo</span>
+      <span><span class="semaforo-punto naranja-contador">0</span> Inactivas</span>
     </div>
 
-    <!-- CONTENEDOR 3 COLUMNAS -->
-    <div class="row g-3" id="contenedorJerarquia">
-      <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <div class="card-header bg-secondary text-white">
-            <strong id="tituloCol1">Regiones</strong>
-          </div>
-          <div class="card-body p-0" id="columna1">
-            <div class="text-center text-muted py-4">Cargando...</div>
-          </div>
-        </div>
+    <!-- BREADCRUMB + BOTÓN VOLVER -->
+    <div class="d-flex align-items-center gap-2 mb-2" id="barraNavegacion" style="display:none !important;">
+      <button class="btn btn-sm btn-outline-light" id="btnVolver" onclick="volverNivel()">← Volver</button>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0" id="migasPan"></ol>
+      </nav>
+    </div>
+
+    <!-- CONTENEDOR DE LISTA -->
+    <div class="card shadow-sm">
+      <div class="card-header bg-secondary text-white">
+        <strong id="tituloNivel">Regiones</strong>
       </div>
-      <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <div class="card-header bg-secondary text-white">
-            <strong id="tituloCol2">Estados</strong>
-          </div>
-          <div class="card-body p-0" id="columna2">
-            <div class="text-center text-muted py-4 small">
-              Selecciona una región
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <div class="card-header bg-secondary text-white">
-            <strong id="tituloCol3">OPTs</strong>
-          </div>
-          <div class="card-body p-0" id="columna3">
-            <div class="text-center text-muted py-4 small">
-              Selecciona un estado
-            </div>
-          </div>
-        </div>
+      <div class="card-body p-0" id="contenedorLista">
+        <div class="text-center text-muted py-4">Cargando...</div>
       </div>
     </div>
   </div>
