@@ -1,13 +1,16 @@
 /**************************************************************
- * OEP - Módulo Jefe de OPT (Carga Diaria)
+ * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo nuevo
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
 
-let INDICADORES = [];
-let VALORES_ACTUALES = {};
-let VALORES_PREVIOS = null;
+let USUARIO = null;
+let TOKEN = null;
+let ULTIMO = null;
 
+// ============================================================
+// API
+// ============================================================
 async function api(accion, datos) {
   const r = await fetch(API_URL, {
     method: 'POST',
@@ -21,125 +24,96 @@ async function api(accion, datos) {
 // ARRANQUE
 // ============================================================
 window.addEventListener('DOMContentLoaded', async () => {
-  const token = localStorage.getItem('oep_token');
-  const usuario = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
-
-  if (!token || !usuario) {
-    location.href = 'index.html';
-    return;
-  }
+  USUARIO = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
+  if (!USUARIO || !USUARIO.token) { location.href = 'index.html'; return; }
+  TOKEN = USUARIO.token;
 
   document.getElementById('nav-usuario').textContent =
-    usuario.nombres + ' ' + usuario.apellidos + ' — ' + usuario.cargo;
+    (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
 
-  const hoy = new Date().toISOString().substring(0, 10);
-  document.getElementById('fecha-hoy').textContent = hoy;
+  const hoy = new Date();
+  document.getElementById('fecha-hoy').textContent =
+    hoy.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-  // Cargar indicadores
-  const rInd = await api('obtenerIndicadores');
-  INDICADORES = rInd.indicadores || [];
-
-  // Cargar último reporte para precarga
-  const idOpt = usuario.opt || 'OPT-DEFAULT';
-  const rUlt = await api('obtenerUltimoReporte', { idOpt });
-
-  if (rUlt.ok && rUlt.ultimo) {
-    VALORES_PREVIOS = rUlt.ultimo.valores;
-    VALORES_ACTUALES = JSON.parse(JSON.stringify(VALORES_PREVIOS));
-    document.getElementById('banner-precarga').classList.remove('d-none');
-   let fechaLimpia = rUlt.ultimo.fecha;
-try {
-  const d = new Date(rUlt.ultimo.fecha);
-  if (!isNaN(d.getTime())) {
-    const f = d.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const h = d.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', hour12: false });
-    fechaLimpia = f + ' a las ' + h;
+  // Pre-cargar último reporte
+  const idOpt = USUARIO.opt || '';
+  if (idOpt) {
+    const r = await api('obtenerUltimoReporte', { idOpt });
+    if (r.ok && r.ultimo) {
+      ULTIMO = r.ultimo;
+      precargarUltimo(r.ultimo);
+      document.getElementById('banner-precarga').classList.remove('d-none');
+      document.getElementById('banner-fecha').textContent = formatearFecha(r.ultimo.fecha);
+    }
   }
-} catch (e) {}
-document.getElementById('banner-fecha').textContent = fechaLimpia;
-  } else {
-    VALORES_ACTUALES = {};
-  }
-
-  renderIndicadores();
 });
 
 // ============================================================
-// RENDER
+// FORM
 // ============================================================
-function renderIndicadores() {
-  const spinner = document.getElementById('spinner-carga');
-  if (spinner) spinner.style.display = 'none';
+function toggleCausa() {
+  const est = document.getElementById('estatus').value;
+  const bloque = document.getElementById('bloque-causa');
+  bloque.style.display = (est === 'INOPERATIVA' || est === 'CIERRE_TECNICO') ? '' : 'none';
+}
 
-  const cont = document.getElementById('contenedor-indicadores');
-  cont.innerHTML = '';
+function precargarUltimo(ult) {
+  const v = ult.valores || {};
+  document.getElementById('estatus').value = v.estatus || '';
+  document.getElementById('causa').value = v.causa || '';
+  document.getElementById('personal-activo').value = v.personal_activo || '';
+  document.getElementById('personal-vacante').value = v.personal_vacante || '';
+  document.getElementById('novedad-vehiculos').value = v.novedad_vehiculos || '';
+  document.getElementById('novedad-infraestructura').value = v.novedad_infraestructura || '';
+  document.getElementById('novedad-conectividad').value = v.novedad_conectividad || '';
+  document.getElementById('observaciones').value = v.observaciones || '';
+  toggleCausa();
+}
 
-  INDICADORES.forEach(ind => {
-    const v = VALORES_ACTUALES[ind.codigo] || {};
-    const div = document.createElement('div');
-    div.className = 'mb-3 p-3 border rounded bg-white shadow-sm';
-    div.innerHTML = `<label class="form-label fw-bold">${ind.codigo} — ${ind.nombre}</label>`;
+function restaurarAnterior() {
+  if (!ULTIMO) return;
+  precargarUltimo(ULTIMO);
+}
 
-    if (ind.tipo === 'SELECTOR_SIMPLE') {
-      const sel = document.createElement('select');
-      sel.className = 'form-select';
-      sel.innerHTML = '<option value="">Seleccione...</option>';
-      ind.opciones.forEach(o => {
-        const opt = document.createElement('option');
-        opt.value = o;
-        opt.textContent = o;
-        if (v.texto === o) opt.selected = true;
-        sel.appendChild(opt);
-      });
-      sel.onchange = () => { VALORES_ACTUALES[ind.codigo] = { texto: sel.value }; };
-      div.appendChild(sel);
-    }
-    else if (ind.tipo === 'MULTIPLE_NUMERICO') {
-      const wrap = document.createElement('div');
-      wrap.className = 'row g-2';
-      for (let i = 1; i <= 4; i++) {
-        const col = document.createElement('div');
-        col.className = 'col-md-3';
-        col.innerHTML = `<input type="number" class="form-control" placeholder="Valor ${i}"
-                          value="${v['valor' + i] || ''}" data-idx="${i}">`;
-        col.querySelector('input').oninput = (e) => {
-          VALORES_ACTUALES[ind.codigo] = VALORES_ACTUALES[ind.codigo] || {};
-          VALORES_ACTUALES[ind.codigo]['valor' + e.target.dataset.idx] = e.target.value;
-        };
-        wrap.appendChild(col);
-      }
-      div.appendChild(wrap);
-    }
-    else {
-      const ta = document.createElement('textarea');
-      ta.className = 'form-control';
-      ta.rows = 2;
-      ta.value = v.texto || '';
-      ta.oninput = () => { VALORES_ACTUALES[ind.codigo] = { texto: ta.value }; };
-      div.appendChild(ta);
-    }
-
-    cont.appendChild(div);
-  });
+function limpiarForm() {
+  ['estatus','causa','personal-activo','personal-vacante',
+   'novedad-vehiculos','novedad-infraestructura','novedad-conectividad','observaciones']
+    .forEach(id => document.getElementById(id).value = '');
+  toggleCausa();
 }
 
 // ============================================================
-// ACCIONES
+// ENVÍO
 // ============================================================
-function restaurarAnterior() {
-  if (!VALORES_PREVIOS) return;
-  VALORES_ACTUALES = JSON.parse(JSON.stringify(VALORES_PREVIOS));
-  renderIndicadores();
+function recogerDatos() {
+  return {
+    estatus: document.getElementById('estatus').value,
+    causa: document.getElementById('causa').value.trim(),
+    personal_activo: document.getElementById('personal-activo').value,
+    personal_vacante: document.getElementById('personal-vacante').value,
+    novedad_vehiculos: document.getElementById('novedad-vehiculos').value.trim(),
+    novedad_infraestructura: document.getElementById('novedad-infraestructura').value.trim(),
+    novedad_conectividad: document.getElementById('novedad-conectividad').value.trim(),
+    observaciones: document.getElementById('observaciones').value.trim()
+  };
+}
+
+function validar(d) {
+  if (!d.estatus) return 'Selecciona el Estatus del día';
+  if ((d.estatus === 'INOPERATIVA' || d.estatus === 'CIERRE_TECNICO') && !d.causa)
+    return 'La causa es obligatoria para Inoperativa o Cierre Técnico';
+  if (d.personal_activo === '') return 'Indica el personal activo';
+  if (d.personal_vacante === '') return 'Indica el personal vacante';
+  return null;
 }
 
 async function enviarSinNovedades() {
-  if (!VALORES_PREVIOS) {
-    alert('No hay reporte anterior para reenviar');
+  if (!ULTIMO) {
+    alert('No hay reporte anterior para reutilizar');
     return;
   }
-  VALORES_ACTUALES = JSON.parse(JSON.stringify(VALORES_PREVIOS));
-  renderIndicadores();
-  document.getElementById('commit').value = 'Sin novedades respecto al reporte anterior';
+  precargarUltimo(ULTIMO);
+  document.getElementById('observaciones').value = 'Sin novedades respecto al reporte anterior';
   await enviarReporte();
 }
 
@@ -148,21 +122,18 @@ async function enviarReporte() {
   msg.style.color = '#c0392b';
   msg.textContent = '';
 
-  const commit = document.getElementById('commit').value.trim();
-  if (!commit) { msg.textContent = 'El commit es obligatorio'; return; }
-
-  const usuario = JSON.parse(localStorage.getItem('oep_usuario'));
-  const token = localStorage.getItem('oep_token');
+  const d = recogerDatos();
+  const err = validar(d);
+  if (err) { msg.textContent = err; return; }
 
   msg.textContent = 'Enviando...';
 
   try {
     const r = await api('guardarReporte', {
-      token,
-      idOpt: usuario.opt || 'OPT-DEFAULT',
-      valores: VALORES_ACTUALES,
-      commit,
-      observaciones: document.getElementById('observaciones').value.trim()
+      token: TOKEN,
+      idOpt: USUARIO.opt || '',
+      valores: d,
+      commit: d.causa || 'Sin novedades'
     });
 
     if (!r.ok) { msg.textContent = r.error; return; }
@@ -173,10 +144,22 @@ async function enviarReporte() {
     msg.textContent = 'Error: ' + e.message;
   }
 }
-async function cerrarSesion() {
-  const token = localStorage.getItem('oep_token');
+
+// ============================================================
+// UTIL
+// ============================================================
+function formatearFecha(f) {
+  if (!f) return '';
   try {
-    if (token) await api('logout', { token });
+    const d = new Date(f);
+    if (isNaN(d.getTime())) return String(f);
+    return d.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  } catch(e) { return String(f); }
+}
+
+async function cerrarSesion() {
+  try {
+    if (TOKEN) await api('logout', { token: TOKEN });
   } catch (e) {}
   localStorage.clear();
   sessionStorage.clear();
