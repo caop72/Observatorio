@@ -57,7 +57,7 @@ async function hacerLogin() {
     if (!r.ok) { msg.textContent = r.error; return; }
 
     localStorage.setItem('oep_token', r.token);
-    localStorage.setItem('oep_usuario', JSON.stringify(r.usuario));
+    localStorage.setItem('oep_usuario', JSON.stringify(Object.assign({}, data.usuario, { token: data.token })));
 
     document.getElementById('panel-nombre').textContent =
       r.usuario.nombres + ' ' + r.usuario.apellidos;
