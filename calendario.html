@@ -18,6 +18,7 @@
         <a href="historial.html" class="btn btn-outline-light btn-sm">Mis acciones</a>
         <a href="perfil.html" class="btn btn-outline-light btn-sm">Mi perfil</a>
         <a href="jerarquia.html" id="nav-jerarquia" class="btn btn-outline-light btn-sm" style="display:none;">Jerarquía</a>
+        <a href="calendario.html" id="nav-calendario" class="btn btn-outline-light btn-sm" style="display:none;">Calendario</a>
         <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar sesión</button>
       </div>
     </div>
@@ -89,9 +90,13 @@
         var U = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
         if (!U) return;
         var rol = (U.rol || U.cargo || '').toString();
-        var permitidos = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado','Jefe de OPT'];
-        if (permitidos.indexOf(rol) !== -1) {
+        var verJerarquia = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado','Jefe de OPT'];
+        var verCalendario = ['Observatorio','CNC'];
+        if (verJerarquia.indexOf(rol) !== -1) {
           document.getElementById('nav-jerarquia').style.display = '';
+        }
+        if (verCalendario.indexOf(rol) !== -1) {
+          document.getElementById('nav-calendario').style.display = '';
         }
       } catch(e) {}
     })();
