@@ -57,7 +57,7 @@ async function hacerLogin() {
     if (!r.ok) { msg.textContent = r.error; return; }
 
     localStorage.setItem('oep_token', r.token);
-    localStorage.setItem('oep_usuario', JSON.stringify(Object.assign({}, data.usuario, { token: data.token })));
+    localStorage.setItem('oep_usuario', JSON.stringify(Object.assign({}, r.usuario, { token: r.token })));
 
     document.getElementById('panel-nombre').textContent =
       r.usuario.nombres + ' ' + r.usuario.apellidos;
@@ -182,11 +182,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const selCargo = document.getElementById('reg-cargo');
   if (selCargo) selCargo.addEventListener('change', toggleBloqueOpt);
 
-  // Auto-login si hay token
-  const token = localStorage.getItem('oep_token');
+  // Auto-login si hay sesión
   const usuario = localStorage.getItem('oep_usuario');
-  if (token && usuario) {
-    const u = JSON.parse(usuario);
+  if (usuario) {
+    let u = null;
+    try { u = JSON.parse(usuario); } catch(e) { u = null; }
+    if (!u || !u.token) return;
     const cargosValidacion = ['Gerente de Estado', 'Gerente de Región', 'CNC', 'Despacho', 'Observatorio'];
     if (u.cargo === 'Jefe de OPT') {
       location.href = 'reporte.html';
