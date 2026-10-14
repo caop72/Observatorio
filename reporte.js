@@ -1,5 +1,5 @@
 /**************************************************************
- * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo nuevo
+ * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo nuevo v4
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -7,6 +7,10 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzI
 let USUARIO = null;
 let TOKEN = null;
 let ULTIMO = null;
+let CATALOGOS = {};
+let modalAgregarBS = null;
+let categoriaActual = '';
+let selectActualId = '';
 
 // ============================================================
 // API
@@ -35,6 +39,17 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('fecha-hoy').textContent =
     hoy.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
+  // Cargar catálogos
+  const rCat = await api('obtenerCatalogos');
+  if (rCat.ok) {
+    CATALOGOS = rCat.catalogos || {};
+    llenarDropdown('abierta', CATALOGOS.SI_NO || []);
+    llenarDropdown('estatus-legal', CATALOGOS.ESTATUS_LEGAL || []);
+    llenarDropdown('observacion', CATALOGOS.OBSERVACIONES || []);
+  }
+
+  modalAgregarBS = new bootstrap.Modal(document.getElementById('modalAgregar'));
+
   // Pre-cargar último reporte
   const idOpt = USUARIO.opt || '';
   if (idOpt) {
@@ -48,6 +63,69 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+function llenarDropdown(idSelect, valores) {
+  const sel = document.getElementById(idSelect);
+  if (!sel) return;
+  const valorActual = sel.value;
+  sel.innerHTML = '<option value="">Seleccione...</option>';
+  valores.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    sel.appendChild(opt);
+  });
+  // Restaurar selección previa si existe
+  if (valorActual) sel.value = valorActual;
+}
+
+// ============================================================
+// MODAL AGREGAR
+// ============================================================
+function abrirModalAgregar(categoria, selectId) {
+  categoriaActual = categoria;
+  selectActualId = selectId;
+  document.getElementById('modal-categoria-txt').textContent = categoria;
+  document.getElementById('modal-valor').value = '';
+  document.getElementById('modal-msg').textContent = '';
+  modalAgregarBS.show();
+  setTimeout(() => document.getElementById('modal-valor').focus(), 300);
+}
+
+async function guardarNuevoValor() {
+  const valor = document.getElementById('modal-valor').value.trim();
+  const msg = document.getElementById('modal-msg');
+  msg.style.color = '#c0392b';
+  if (!valor) { msg.textContent = 'Escribe un valor'; return; }
+
+  msg.textContent = 'Guardando...';
+
+  try {
+    const r = await api('agregarValorCatalogo', {
+      token: TOKEN,
+      categoria: categoriaActual,
+      valor: valor
+    });
+    if (!r.ok) { msg.textContent = r.error || 'Error'; return; }
+
+    // Recargar catálogos y dropdown
+    const rCat = await api('obtenerCatalogos');
+    if (rCat.ok) {
+      CATALOGOS = rCat.catalogos || {};
+      const lista = categoriaActual === 'OBSERVACIONES' ? (CATALOGOS.OBSERVACIONES || []) :
+                    categoriaActual === 'ESTATUS_LEGAL' ? (CATALOGOS.ESTATUS_LEGAL || []) :
+                    categoriaActual === 'SI_NO' ? (CATALOGOS.SI_NO || []) : [];
+      llenarDropdown(selectActualId, lista);
+      document.getElementById(selectActualId).value = valor;
+    }
+
+    msg.style.color = '#27ae60';
+    msg.textContent = '✅ Agregado';
+    setTimeout(() => modalAgregarBS.hide(), 800);
+  } catch (e) {
+    msg.textContent = 'Error: ' + e.message;
+  }
+}
+
 // ============================================================
 // FORM
 // ============================================================
@@ -60,6 +138,9 @@ function toggleCausa() {
 function precargarUltimo(ult) {
   const v = ult.valores || {};
   document.getElementById('estatus').value = v.estatus || '';
+  document.getElementById('abierta').value = v.abierta || '';
+  document.getElementById('estatus-legal').value = v.estatus_legal || '';
+  document.getElementById('observacion').value = v.observacion || '';
   document.getElementById('causa').value = v.causa || '';
   document.getElementById('personal-activo').value = v.personal_activo || '';
   document.getElementById('personal-vacante').value = v.personal_vacante || '';
@@ -75,19 +156,15 @@ function restaurarAnterior() {
   precargarUltimo(ULTIMO);
 }
 
-function limpiarForm() {
-  ['estatus','causa','personal-activo','personal-vacante',
-   'novedad-vehiculos','novedad-infraestructura','novedad-conectividad','observaciones']
-    .forEach(id => document.getElementById(id).value = '');
-  toggleCausa();
-}
-
 // ============================================================
 // ENVÍO
 // ============================================================
 function recogerDatos() {
   return {
     estatus: document.getElementById('estatus').value,
+    abierta: document.getElementById('abierta').value,
+    estatus_legal: document.getElementById('estatus-legal').value,
+    observacion: document.getElementById('observacion').value,
     causa: document.getElementById('causa').value.trim(),
     personal_activo: document.getElementById('personal-activo').value,
     personal_vacante: document.getElementById('personal-vacante').value,
@@ -99,7 +176,10 @@ function recogerDatos() {
 }
 
 function validar(d) {
-  if (!d.estatus) return 'Selecciona el Estatus del día';
+  if (!d.estatus) return 'Selecciona el Estatus operativo';
+  if (!d.abierta) return 'Selecciona si está abierta al público';
+  if (!d.estatus_legal) return 'Selecciona el Estatus legal';
+  if (!d.observacion) return 'Selecciona una Observación';
   if ((d.estatus === 'INOPERATIVA' || d.estatus === 'CIERRE_TECNICO') && !d.causa)
     return 'La causa es obligatoria para Inoperativa o Cierre Técnico';
   if (d.personal_activo === '') return 'Indica el personal activo';
