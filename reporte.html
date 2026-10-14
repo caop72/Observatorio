@@ -25,7 +25,7 @@
     </div>
   </nav>
 
-  <div class="container my-4" style="max-width:900px;">
+  <div class="container my-4" style="max-width:1200px;">
 
     <div id="banner-precarga" class="alert alert-warning d-none">
       ⚠️ Datos precargados del reporte del <strong id="banner-fecha"></strong>.
@@ -91,47 +91,90 @@
         <div class="card-header bg-secondary text-white"><strong>2. Parte del Personal</strong></div>
         <div class="card-body">
           <div class="table-responsive">
-            <table class="table table-sm align-middle">
+            <table class="table table-sm align-middle" id="tabla-personal">
               <thead class="table-light">
                 <tr>
-                  <th>Tipo</th>
-                  <th class="text-center" style="width:30%;">Activos</th>
-                  <th class="text-center" style="width:30%;">Vacantes</th>
+                  <th rowspan="2" class="align-middle">Tipo</th>
+                  <th colspan="5" class="text-center">Situaciones</th>
+                  <th rowspan="2" class="text-center align-middle bg-light">Activos</th>
+                  <th rowspan="2" class="text-center align-middle">Vacantes</th>
+                  <th rowspan="2" class="text-center align-middle">Total</th>
+                </tr>
+                <tr>
+                  <th class="text-center" style="min-width:80px;">Presentes</th>
+                  <th class="text-center" style="min-width:80px;">Reposo</th>
+                  <th class="text-center" style="min-width:80px;">Comisión</th>
+                  <th class="text-center" style="min-width:80px;">Permiso</th>
+                  <th class="text-center" style="min-width:80px;">Suspendido</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Directivos</td>
-                  <td><input type="number" id="activos-directivos" class="form-control form-control-sm" min="0" value="0" oninput="calcularTotalRRHH()"></td>
-                  <td><input type="number" id="vacantes-directivos" class="form-control form-control-sm" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                <tr data-tipo="directivos">
+                  <td><strong>Directivos</strong></td>
+                  <td><input type="number" id="presentes-directivos" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="reposo-directivos" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="comision-directivos" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="permiso-directivos" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="suspendido-directivos" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td class="text-center bg-light"><strong id="activos-directivos">0</strong></td>
+                  <td><input type="number" id="vacantes-directivos" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td class="text-center"><strong id="total-directivos">0</strong></td>
                 </tr>
-                <tr>
-                  <td>Empleados</td>
-                  <td><input type="number" id="activos-empleados" class="form-control form-control-sm" min="0" value="0" oninput="calcularTotalRRHH()"></td>
-                  <td><input type="number" id="vacantes-empleados" class="form-control form-control-sm" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                <tr data-tipo="empleados">
+                  <td><strong>Empleados</strong></td>
+                  <td><input type="number" id="presentes-empleados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="reposo-empleados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="comision-empleados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="permiso-empleados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="suspendido-empleados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td class="text-center bg-light"><strong id="activos-empleados">0</strong></td>
+                  <td><input type="number" id="vacantes-empleados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td class="text-center"><strong id="total-empleados">0</strong></td>
                 </tr>
-                <tr>
-                  <td>Obreros</td>
-                  <td><input type="number" id="activos-obreros" class="form-control form-control-sm" min="0" value="0" oninput="calcularTotalRRHH()"></td>
-                  <td><input type="number" id="vacantes-obreros" class="form-control form-control-sm" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                <tr data-tipo="obreros">
+                  <td><strong>Obreros</strong></td>
+                  <td><input type="number" id="presentes-obreros" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="reposo-obreros" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="comision-obreros" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="permiso-obreros" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="suspendido-obreros" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td class="text-center bg-light"><strong id="activos-obreros">0</strong></td>
+                  <td><input type="number" id="vacantes-obreros" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td class="text-center"><strong id="total-obreros">0</strong></td>
                 </tr>
-                <tr>
-                  <td>Contratados</td>
-                  <td><input type="number" id="activos-contratados" class="form-control form-control-sm" min="0" value="0" oninput="calcularTotalRRHH()"></td>
-                  <td><input type="number" id="vacantes-contratados" class="form-control form-control-sm" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                <tr data-tipo="contratados">
+                  <td><strong>Contratados</strong></td>
+                  <td><input type="number" id="presentes-contratados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="reposo-contratados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="comision-contratados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="permiso-contratados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td><input type="number" id="suspendido-contratados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td class="text-center bg-light"><strong id="activos-contratados">0</strong></td>
+                  <td><input type="number" id="vacantes-contratados" class="form-control form-control-sm text-center" min="0" value="0" oninput="calcularTotalRRHH()"></td>
+                  <td class="text-center"><strong id="total-contratados">0</strong></td>
                 </tr>
               </tbody>
-              <tfoot class="table-light fw-bold">
+              <tfoot class="table-secondary fw-bold">
                 <tr>
                   <td>TOTAL</td>
-                  <td class="text-center" id="total-activos">0</td>
-                  <td class="text-center" id="total-vacantes">0</td>
+                  <td class="text-center" id="tot-presentes">0</td>
+                  <td class="text-center" id="tot-reposo">0</td>
+                  <td class="text-center" id="tot-comision">0</td>
+                  <td class="text-center" id="tot-permiso">0</td>
+                  <td class="text-center" id="tot-suspendido">0</td>
+                  <td class="text-center bg-light" id="tot-activos">0</td>
+                  <td class="text-center" id="tot-vacantes">0</td>
+                  <td class="text-center" id="tot-total">0</td>
                 </tr>
               </tfoot>
             </table>
           </div>
           <div class="mt-2 p-2 bg-light border rounded text-center">
             <strong>Total RR.HH.: <span id="total-rrhh">0</span></strong>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            <strong>Activos: <span id="total-activos">0</span></strong>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            <strong>Vacantes: <span id="total-vacantes">0</span></strong>
           </div>
         </div>
       </div>
