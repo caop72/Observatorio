@@ -3,52 +3,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OEP — Recuperar Clave</title>
+  <title>OEP — Carga Diaria</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <div id="vista-solicitar" class="vista activa">
-    <div class="card-form">
-      <h2>Recuperar Clave</h2>
-      <p class="text-muted">Ingresa tu usuario o cédula. Si estás registrado, recibirás un correo con instrucciones.</p>
+  <nav class="navbar navbar-dark" style="background:#1a3d7c;">
+    <div class="container-fluid">
+      <span class="navbar-brand">OEP — Carga Diaria</span>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-white" id="nav-usuario"></span>
+        <a href="estadisticas.html" class="btn btn-outline-light btn-sm">Estadísticas</a>
+        <a href="historial.html" class="btn btn-outline-light btn-sm">Mis acciones</a>
+        <a href="perfil.html" class="btn btn-outline-light btn-sm">Mi perfil</a>
+        <a href="jerarquia.html" id="nav-jerarquia" class="btn btn-outline-light btn-sm" style="display:none;">Jerarquía</a>
+        <a href="calendario.html" id="nav-calendario" class="btn btn-outline-light btn-sm" style="display:none;">Calendario</a>
+        <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </nav>
 
-      <div class="mb-3">
-        <label class="form-label">Usuario o Cédula</label>
-        <input type="text" id="identificador" class="form-control" placeholder="Ej: ruben o V-12345678">
+  <div class="container my-4" style="max-width:900px;">
+
+    <div id="banner-precarga" class="alert alert-warning d-none">
+      ⚠️ Datos precargados del reporte del <strong id="banner-fecha"></strong>.
+      Verifica y modifica lo que haya cambiado.
+      <button class="btn btn-sm btn-outline-dark ms-2" onclick="restaurarAnterior()">Restaurar valores</button>
+    </div>
+
+    <div id="form-reporte">
+      <h4 class="mb-3 text-white">Reporte del <span id="fecha-hoy"></span></h4>
+
+      <!-- BLOQUE 1: ESTATUS DEL DÍA -->
+      <div class="card mb-3 shadow-sm">
+        <div class="card-header bg-secondary text-white"><strong>1. Estatus del día</strong></div>
+        <div class="card-body">
+
+          <div class="mb-3">
+            <label class="form-label">Estatus operativo *</label>
+            <select id="estatus" class="form-select" onchange="toggleCausa()">
+              <option value="">Seleccione...</option>
+              <option value="OPERATIVA">Operativa</option>
+              <option value="INOPERATIVA">Inoperativa</option>
+              <option value="CIERRE_TECNICO">Cierre Técnico</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">¿Abierta al público? *</label>
+              <select id="abierta" class="form-select">
+                <option value="">Seleccione...</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Estatus legal *</label>
+              <select id="estatus-legal" class="form-select">
+                <option value="">Seleccione...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3" id="bloque-causa" style="display:none;">
+            <label class="form-label">Causa *</label>
+            <textarea id="causa" class="form-control" rows="2"
+                      placeholder="Explica brevemente el motivo"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Observación del día *</label>
+            <div class="input-group">
+              <select id="observacion" class="form-select">
+                <option value="">Seleccione...</option>
+              </select>
+              <button class="btn btn-outline-primary" type="button"
+                      onclick="abrirModalAgregar('OBSERVACIONES','observacion')">+</button>
+            </div>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">Personal activo *</label>
+              <input type="number" id="personal-activo" class="form-control" min="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Personal vacante *</label>
+              <input type="number" id="personal-vacante" class="form-control" min="0">
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      <button class="btn btn-primary w-100" onclick="solicitarReset()">Enviar solicitud</button>
-      <div id="msg-solicitar" class="msg-error"></div>
+      <!-- BLOQUE 2: NOVEDADES -->
+      <div class="card mb-3 shadow-sm">
+        <div class="card-header bg-secondary text-white"><strong>2. Novedades (opcional)</strong></div>
+        <div class="card-body">
 
-      <hr>
-      <p class="text-center mb-0">
-        <a href="index.html">Volver al inicio de sesión</a>
-      </p>
+          <div class="mb-3">
+            <label class="form-label">Vehículos</label>
+            <textarea id="novedad-vehiculos" class="form-control" rows="2"
+                      placeholder="Ej: Un vehículo fuera de servicio"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Infraestructura</label>
+            <textarea id="novedad-infraestructura" class="form-control" rows="2"
+                      placeholder="Ej: Filtración en techo"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Conectividad</label>
+            <textarea id="novedad-conectividad" class="form-control" rows="2"
+                      placeholder="Ej: Intermitencia en internet"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Observaciones generales</label>
+            <textarea id="observaciones" class="form-control" rows="2"></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-secondary" onclick="enviarSinNovedades()">📋 Sin novedades</button>
+        <button class="btn btn-primary flex-grow-1" onclick="enviarReporte()">✅ Enviar reporte</button>
+      </div>
+
+      <div id="msg" class="msg-error mt-2"></div>
+    </div>
+
+  </div>
+
+  <!-- MODAL AGREGAR VALOR A CATÁLOGO -->
+  <div class="modal fade" id="modalAgregar" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Agregar nuevo valor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-2">Categoría: <strong id="modal-categoria-txt"></strong></p>
+          <input type="text" id="modal-valor" class="form-control" placeholder="Escribe el nuevo valor" maxlength="120">
+          <div id="modal-msg" class="mt-2 small"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarNuevoValor()">Guardar</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="vista-cambiar" class="vista">
-    <div class="card-form">
-      <h2>Nueva Clave</h2>
-      <p class="text-muted">Ingresa tu nueva clave. Debe tener al menos 6 caracteres.</p>
-
-      <div class="mb-3">
-        <label class="form-label">Nueva clave</label>
-        <input type="password" id="clave-nueva" class="form-control">
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Confirmar nueva clave</label>
-        <input type="password" id="clave-confirmar" class="form-control">
-      </div>
-
-      <button class="btn btn-primary w-100" onclick="cambiarClaveToken()">Cambiar clave</button>
-      <div id="msg-cambiar" class="msg-error"></div>
-    </div>
-  </div>
-
-  <script src="reset.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="reporte.js?v=4"></script>
+  <script>
+    (function(){
+      try {
+        var U = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
+        if (!U) return;
+        var rol = (U.rol || U.cargo || '').toString();
+        var verJerarquia = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado','Jefe de OPT'];
+        var verCalendario = ['Observatorio','CNC'];
+        if (verJerarquia.indexOf(rol) !== -1) {
+          document.getElementById('nav-jerarquia').style.display = '';
+        }
+        if (verCalendario.indexOf(rol) !== -1) {
+          document.getElementById('nav-calendario').style.display = '';
+        }
+      } catch(e) {}
+    })();
+  </script>
 </body>
 </html>
