@@ -1,6 +1,6 @@
 /**************************************************************
- * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v6
- * Bloque 2: Parte del Personal (Directivos, Empleados, Obreros, Contratados)
+ * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v10
+ * Bloque 2: Parte del Personal matricial
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -12,6 +12,9 @@ let CATALOGOS = {};
 let modalAgregarBS = null;
 let categoriaActual = '';
 let selectActualId = '';
+
+const TIPOS = ['directivos','empleados','obreros','contratados'];
+const SITUACIONES = ['presentes','reposo','comision','permiso','suspendido'];
 
 // ============================================================
 // API
@@ -40,7 +43,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('fecha-hoy').textContent =
     hoy.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-  // Cargar catálogos
   const rCat = await api('obtenerCatalogos');
   if (rCat.ok) {
     CATALOGOS = rCat.catalogos || {};
@@ -51,7 +53,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   modalAgregarBS = new bootstrap.Modal(document.getElementById('modalAgregar'));
 
-  // Pre-cargar último reporte
   const idOpt = USUARIO.opt || '';
   if (idOpt) {
     const r = await api('obtenerUltimoReporte', { idOpt });
@@ -144,14 +145,14 @@ function precargarUltimo(ult) {
   document.getElementById('observacion').value = v.observacion || '';
   document.getElementById('causa').value = v.causa || '';
 
-  document.getElementById('activos-directivos').value = v.activos_directivos || 0;
-  document.getElementById('vacantes-directivos').value = v.vacantes_directivos || 0;
-  document.getElementById('activos-empleados').value = v.activos_empleados || 0;
-  document.getElementById('vacantes-empleados').value = v.vacantes_empleados || 0;
-  document.getElementById('activos-obreros').value = v.activos_obreros || 0;
-  document.getElementById('vacantes-obreros').value = v.vacantes_obreros || 0;
-  document.getElementById('activos-contratados').value = v.activos_contratados || 0;
-  document.getElementById('vacantes-contratados').value = v.vacantes_contratados || 0;
+  TIPOS.forEach(t => {
+    SITUACIONES.forEach(s => {
+      const el = document.getElementById(s + '-' + t);
+      if (el) el.value = v[s + '_' + t] || 0;
+    });
+    const vac = document.getElementById('vacantes-' + t);
+    if (vac) vac.value = v['vacantes_' + t] || 0;
+  });
 
   document.getElementById('novedad-vehiculos').value = v.novedad_vehiculos || '';
   document.getElementById('novedad-infraestructura').value = v.novedad_infraestructura || '';
@@ -167,46 +168,77 @@ function restaurarAnterior() {
 }
 
 // ============================================================
-// TOTAL RR.HH.
+// CÁLCULOS EN VIVO
 // ============================================================
-function calcularTotalRRHH() {
-  const a = ['directivos','empleados','obreros','contratados'].reduce((sum, t) => {
-    return sum + (parseInt(document.getElementById('activos-' + t).value, 10) || 0);
-  }, 0);
-  const v = ['directivos','empleados','obreros','contratados'].reduce((sum, t) => {
-    return sum + (parseInt(document.getElementById('vacantes-' + t).value, 10) || 0);
-  }, 0);
+function num_(id) {
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  return parseInt(el.value, 10) || 0;
+}
 
-  document.getElementById('total-activos').textContent = a;
-  document.getElementById('total-vacantes').textContent = v;
-  document.getElementById('total-rrhh').textContent = a + v;
+function calcularTotalRRHH() {
+  const totalesSituacion = {};
+  SITUACIONES.forEach(s => totalesSituacion[s] = 0);
+
+  let granTotalActivos = 0;
+  let granTotalVacantes = 0;
+
+  TIPOS.forEach(t => {
+    let activosTipo = 0;
+    SITUACIONES.forEach(s => {
+      const v = num_(s + '-' + t);
+      activosTipo += v;
+      totalesSituacion[s] += v;
+    });
+    const vacantesTipo = num_('vacantes-' + t);
+    const totalTipo = activosTipo + vacantesTipo;
+
+    document.getElementById('activos-' + t).textContent = activosTipo;
+    document.getElementById('total-' + t).textContent = totalTipo;
+
+    granTotalActivos += activosTipo;
+    granTotalVacantes += vacantesTipo;
+  });
+
+  // Totales al pie
+  SITUACIONES.forEach(s => {
+    const el = document.getElementById('tot-' + s);
+    if (el) el.textContent = totalesSituacion[s];
+  });
+  document.getElementById('tot-activos').textContent = granTotalActivos;
+  document.getElementById('tot-vacantes').textContent = granTotalVacantes;
+  document.getElementById('tot-total').textContent = granTotalActivos + granTotalVacantes;
+
+  // Bloque resumen
+  document.getElementById('total-activos').textContent = granTotalActivos;
+  document.getElementById('total-vacantes').textContent = granTotalVacantes;
+  document.getElementById('total-rrhh').textContent = granTotalActivos + granTotalVacantes;
 }
 
 // ============================================================
 // ENVÍO
 // ============================================================
 function recogerDatos() {
-  return {
+  const d = {
     estatus: document.getElementById('estatus').value,
     abierta: document.getElementById('abierta').value,
     estatus_legal: document.getElementById('estatus-legal').value,
     observacion: document.getElementById('observacion').value,
     causa: document.getElementById('causa').value.trim(),
-
-    activos_directivos:   document.getElementById('activos-directivos').value || 0,
-    vacantes_directivos:  document.getElementById('vacantes-directivos').value || 0,
-    activos_empleados:    document.getElementById('activos-empleados').value || 0,
-    vacantes_empleados:   document.getElementById('vacantes-empleados').value || 0,
-    activos_obreros:      document.getElementById('activos-obreros').value || 0,
-    vacantes_obreros:     document.getElementById('vacantes-obreros').value || 0,
-    activos_contratados:  document.getElementById('activos-contratados').value || 0,
-    vacantes_contratados: document.getElementById('vacantes-contratados').value || 0,
-
-    novedad_vehiculos:       document.getElementById('novedad-vehiculos').value.trim(),
+    novedad_vehiculos: document.getElementById('novedad-vehiculos').value.trim(),
     novedad_infraestructura: document.getElementById('novedad-infraestructura').value.trim(),
-    novedad_conectividad:    document.getElementById('novedad-conectividad').value.trim(),
-    observaciones:           document.getElementById('observaciones').value.trim()
+    novedad_conectividad: document.getElementById('novedad-conectividad').value.trim(),
+    observaciones: document.getElementById('observaciones').value.trim()
   };
+  TIPOS.forEach(t => {
+    SITUACIONES.forEach(s => {
+      d[s + '_' + t] = num_(s + '-' + t);
+    });
+    d['vacantes_' + t] = num_('vacantes-' + t);
+    d['activos_' + t] = num_('activos-' + t).toString ? document.getElementById('activos-' + t).textContent : 0;
+    d['total_' + t] = document.getElementById('total-' + t).textContent;
+  });
+  return d;
 }
 
 function validar(d) {
