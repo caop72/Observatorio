@@ -149,6 +149,7 @@ function precargarUltimo(ult) {
   document.getElementById('novedad-conectividad').value = v.novedad_conectividad || '';
   document.getElementById('observaciones').value = v.observaciones || '';
   toggleCausa();
+  calcularTotalRRHH();
 }
 
 function restaurarAnterior() {
@@ -244,4 +245,12 @@ async function cerrarSesion() {
   localStorage.clear();
   sessionStorage.clear();
   location.href = 'index.html';
+}
+// ============================================================
+// TOTAL RR.HH.
+// ============================================================
+function calcularTotalRRHH() {
+  const activos = parseInt(document.getElementById('personal-activo').value, 10) || 0;
+  const vacantes = parseInt(document.getElementById('personal-vacante').value, 10) || 0;
+  document.getElementById('total-rrhh').textContent = activos + vacantes;
 }
