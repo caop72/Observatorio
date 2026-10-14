@@ -14,6 +14,7 @@
       <span class="navbar-brand">OEP — Carga Diaria</span>
       <div class="d-flex align-items-center gap-3">
         <span class="text-white" id="nav-usuario"></span>
+        <a href="reporte.html" class="btn btn-outline-light btn-sm">Carga Diaria</a>
         <a href="estadisticas.html" class="btn btn-outline-light btn-sm">Estadísticas</a>
         <a href="historial.html" class="btn btn-outline-light btn-sm">Mis acciones</a>
         <a href="perfil.html" class="btn btn-outline-light btn-sm">Mi perfil</a>
@@ -41,7 +42,7 @@
         <div class="card-body">
 
           <div class="mb-3">
-            <label class="form-label">Estatus *</label>
+            <label class="form-label">Estatus operativo *</label>
             <select id="estatus" class="form-select" onchange="toggleCausa()">
               <option value="">Seleccione...</option>
               <option value="OPERATIVA">Operativa</option>
@@ -50,21 +51,51 @@
             </select>
           </div>
 
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">¿Abierta al público? *</label>
+              <select id="abierta" class="form-select">
+                <option value="">Seleccione...</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Estatus legal *</label>
+              <select id="estatus-legal" class="form-select">
+                <option value="">Seleccione...</option>
+              </select>
+            </div>
+          </div>
+
           <div class="mb-3" id="bloque-causa" style="display:none;">
             <label class="form-label">Causa *</label>
             <textarea id="causa" class="form-control" rows="2"
                       placeholder="Explica brevemente el motivo"></textarea>
           </div>
 
+          <div class="mb-3">
+            <label class="form-label">Observación del día *</label>
+            <div class="input-group">
+              <select id="observacion" class="form-select">
+                <option value="">Seleccione...</option>
+              </select>
+              <button class="btn btn-outline-primary" type="button"
+                      onclick="abrirModalAgregar('OBSERVACIONES','observacion')">+</button>
+            </div>
+          </div>
+
           <div class="row g-2">
             <div class="col-md-6">
               <label class="form-label">Personal activo *</label>
-              <input type="number" id="personal-activo" class="form-control" min="0">
+              <input type="number" id="personal-activo" class="form-control" min="0" oninput="calcularTotalRRHH()">
             </div>
             <div class="col-md-6">
               <label class="form-label">Personal vacante *</label>
-              <input type="number" id="personal-vacante" class="form-control" min="0">
+              <input type="number" id="personal-vacante" class="form-control" min="0" oninput="calcularTotalRRHH()">
             </div>
+          </div>
+
+          <div class="mt-3 p-2 bg-light border rounded text-center">
+            <strong>Total RR.HH.: <span id="total-rrhh">0</span></strong>
           </div>
 
         </div>
@@ -111,7 +142,29 @@
 
   </div>
 
-  <script src="reporte.js?v=3"></script>
+  <!-- MODAL AGREGAR VALOR A CATÁLOGO -->
+  <div class="modal fade" id="modalAgregar" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Agregar nuevo valor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-2">Categoría: <strong id="modal-categoria-txt"></strong></p>
+          <input type="text" id="modal-valor" class="form-control" placeholder="Escribe el nuevo valor" maxlength="120">
+          <div id="modal-msg" class="mt-2 small"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarNuevoValor()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="reporte.js?v=5"></script>
   <script>
     (function(){
       try {
