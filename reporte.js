@@ -1,5 +1,6 @@
 /**************************************************************
- * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo nuevo v4
+ * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v6
+ * Bloque 2: Parte del Personal (Directivos, Empleados, Obreros, Contratados)
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -61,6 +62,8 @@ window.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('banner-fecha').textContent = formatearFecha(r.ultimo.fecha);
     }
   }
+
+  calcularTotalRRHH();
 });
 
 function llenarDropdown(idSelect, valores) {
@@ -74,7 +77,6 @@ function llenarDropdown(idSelect, valores) {
     opt.textContent = v;
     sel.appendChild(opt);
   });
-  // Restaurar selección previa si existe
   if (valorActual) sel.value = valorActual;
 }
 
@@ -107,7 +109,6 @@ async function guardarNuevoValor() {
     });
     if (!r.ok) { msg.textContent = r.error || 'Error'; return; }
 
-    // Recargar catálogos y dropdown
     const rCat = await api('obtenerCatalogos');
     if (rCat.ok) {
       CATALOGOS = rCat.catalogos || {};
@@ -142,8 +143,16 @@ function precargarUltimo(ult) {
   document.getElementById('estatus-legal').value = v.estatus_legal || '';
   document.getElementById('observacion').value = v.observacion || '';
   document.getElementById('causa').value = v.causa || '';
-  document.getElementById('personal-activo').value = v.personal_activo || '';
-  document.getElementById('personal-vacante').value = v.personal_vacante || '';
+
+  document.getElementById('activos-directivos').value = v.activos_directivos || 0;
+  document.getElementById('vacantes-directivos').value = v.vacantes_directivos || 0;
+  document.getElementById('activos-empleados').value = v.activos_empleados || 0;
+  document.getElementById('vacantes-empleados').value = v.vacantes_empleados || 0;
+  document.getElementById('activos-obreros').value = v.activos_obreros || 0;
+  document.getElementById('vacantes-obreros').value = v.vacantes_obreros || 0;
+  document.getElementById('activos-contratados').value = v.activos_contratados || 0;
+  document.getElementById('vacantes-contratados').value = v.vacantes_contratados || 0;
+
   document.getElementById('novedad-vehiculos').value = v.novedad_vehiculos || '';
   document.getElementById('novedad-infraestructura').value = v.novedad_infraestructura || '';
   document.getElementById('novedad-conectividad').value = v.novedad_conectividad || '';
@@ -158,6 +167,22 @@ function restaurarAnterior() {
 }
 
 // ============================================================
+// TOTAL RR.HH.
+// ============================================================
+function calcularTotalRRHH() {
+  const a = ['directivos','empleados','obreros','contratados'].reduce((sum, t) => {
+    return sum + (parseInt(document.getElementById('activos-' + t).value, 10) || 0);
+  }, 0);
+  const v = ['directivos','empleados','obreros','contratados'].reduce((sum, t) => {
+    return sum + (parseInt(document.getElementById('vacantes-' + t).value, 10) || 0);
+  }, 0);
+
+  document.getElementById('total-activos').textContent = a;
+  document.getElementById('total-vacantes').textContent = v;
+  document.getElementById('total-rrhh').textContent = a + v;
+}
+
+// ============================================================
 // ENVÍO
 // ============================================================
 function recogerDatos() {
@@ -167,12 +192,20 @@ function recogerDatos() {
     estatus_legal: document.getElementById('estatus-legal').value,
     observacion: document.getElementById('observacion').value,
     causa: document.getElementById('causa').value.trim(),
-    personal_activo: document.getElementById('personal-activo').value,
-    personal_vacante: document.getElementById('personal-vacante').value,
-    novedad_vehiculos: document.getElementById('novedad-vehiculos').value.trim(),
+
+    activos_directivos:   document.getElementById('activos-directivos').value || 0,
+    vacantes_directivos:  document.getElementById('vacantes-directivos').value || 0,
+    activos_empleados:    document.getElementById('activos-empleados').value || 0,
+    vacantes_empleados:   document.getElementById('vacantes-empleados').value || 0,
+    activos_obreros:      document.getElementById('activos-obreros').value || 0,
+    vacantes_obreros:     document.getElementById('vacantes-obreros').value || 0,
+    activos_contratados:  document.getElementById('activos-contratados').value || 0,
+    vacantes_contratados: document.getElementById('vacantes-contratados').value || 0,
+
+    novedad_vehiculos:       document.getElementById('novedad-vehiculos').value.trim(),
     novedad_infraestructura: document.getElementById('novedad-infraestructura').value.trim(),
-    novedad_conectividad: document.getElementById('novedad-conectividad').value.trim(),
-    observaciones: document.getElementById('observaciones').value.trim()
+    novedad_conectividad:    document.getElementById('novedad-conectividad').value.trim(),
+    observaciones:           document.getElementById('observaciones').value.trim()
   };
 }
 
@@ -183,8 +216,6 @@ function validar(d) {
   if (!d.observacion) return 'Selecciona una Observación';
   if ((d.estatus === 'INOPERATIVA' || d.estatus === 'CIERRE_TECNICO') && !d.causa)
     return 'La causa es obligatoria para Inoperativa o Cierre Técnico';
-  if (d.personal_activo === '') return 'Indica el personal activo';
-  if (d.personal_vacante === '') return 'Indica el personal vacante';
   return null;
 }
 
@@ -245,12 +276,4 @@ async function cerrarSesion() {
   localStorage.clear();
   sessionStorage.clear();
   location.href = 'index.html';
-}
-// ============================================================
-// TOTAL RR.HH.
-// ============================================================
-function calcularTotalRRHH() {
-  const activos = parseInt(document.getElementById('personal-activo').value, 10) || 0;
-  const vacantes = parseInt(document.getElementById('personal-vacante').value, 10) || 0;
-  document.getElementById('total-rrhh').textContent = activos + vacantes;
 }
