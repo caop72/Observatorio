@@ -71,6 +71,7 @@ async function cargarArbol() {
     }
     ARBOL = data.arbol || [];
     NIVEL = 0;
+    actualizarContadoresLeyenda();
     actualizarTotalesNacionales();
     renderNivel();
   } catch (e) {
