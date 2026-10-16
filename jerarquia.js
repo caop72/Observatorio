@@ -366,3 +366,15 @@ function actualizarTotalesNacionales() {
 function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/'/g, "\\'");
 }
+function actualizarTotalesNacionales() {
+  let totalInactivas = 0;
+  let totalCierre = 0;
+  ARBOL.forEach(r => {
+    totalInactivas += (r.inactivas || 0);
+    totalCierre += (r.cierreTecnico || 0);
+  });
+  const el1 = document.getElementById('tot-inactivas');
+  const el2 = document.getElementById('tot-cierre-tecnico');
+  if (el1) el1.textContent = totalInactivas;
+  if (el2) el2.textContent = totalCierre;
+}
