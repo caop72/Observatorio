@@ -198,6 +198,7 @@ function renderFilaEstado(estado) {
         <span class="puntos-dotted"></span>
         ${renderIndicador(estado.color)}
         ${renderContadorInactivas(estado.inactivas)}
+        ${renderContadorCierreTecnico(estado.cierreTecnico)}
       </div>
       <span class="text-primary fs-5">›</span>
     </div>
