@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OEP — Filtros</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=100">
+</head>
+<body>
+
+  <nav class="navbar navbar-dark" style="background:#1a3d7c;">
+    <div class="container-fluid">
+      <span class="navbar-brand">OEP — Filtros</span>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-white" id="nav-usuario"></span>
+        <a href="estadisticas.html" class="btn btn-outline-light btn-sm">Estadísticas</a>
+        <a href="jerarquia.html" class="btn btn-outline-light btn-sm">Jerarquía</a>
+        <a href="historial.html" class="btn btn-outline-light btn-sm">Mis acciones</a>
+        <a href="perfil.html" class="btn btn-outline-light btn-sm">Mi perfil</a>
+        <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-4" style="max-width:1200px;">
+
+    <h4 class="text-white mb-3">Filtro de OPTs</h4>
+
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+
+        <div class="row g-3 mb-2">
+          <div class="col-md-6">
+            <label class="form-label">📊 Reporte</label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="rep-blanco" value="blanco"><label class="form-check-label" for="rep-blanco">⚪ En plazo</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="rep-verde" value="verde"><label class="form-check-label" for="rep-verde">🟢 Sin novedad</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="rep-amarillo" value="amarillo"><label class="form-check-label" for="rep-amarillo">🟡 Objetado</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="rep-rojo" value="rojo"><label class="form-check-label" for="rep-rojo">🔴 Sin reportar</label></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">🏛️ Estatus</label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="est-verde" value="verde"><label class="form-check-label" for="est-verde">🟢 Operativa</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="est-naranja" value="naranja"><label class="form-check-label" for="est-naranja">🟠 Inoperativa</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="est-rojo" value="rojo"><label class="form-check-label" for="est-rojo">🔴 Por Cierre Técnico</label></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">📄 Legalidad</label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="leg-verde" value="verde"><label class="form-check-label" for="leg-verde">🟢 Propia</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="leg-naranja" value="naranja"><label class="form-check-label" for="leg-naranja">🟠 Arrendada</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="leg-amarillo" value="amarillo"><label class="form-check-label" for="leg-amarillo">🟡 Comodato</label></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">📍 Ubicación</label>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <select id="f-region" class="form-select form-select-sm">
+                  <option value="">Todas las regiones</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <select id="f-estado" class="form-select form-select-sm">
+                  <option value="">Todos los estados</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">🔎 Buscar (nombre o ID)</label>
+            <input type="text" id="f-texto" class="form-control form-control-sm" placeholder="Ej: Barinas o OPT-AND-BAR-001">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">📅 Último reporte desde</label>
+            <input type="date" id="f-desde" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">📅 Hasta</label>
+            <input type="date" id="f-hasta" class="form-control form-control-sm">
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <button class="btn btn-sm btn-outline-secondary" onclick="setRango('hoy')">Hoy</button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="setRango('7d')">Últimos 7 días</button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="setRango('30d')">Últimos 30 días</button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="setRango('limpiar')">Limpiar fechas</button>
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-primary" onclick="aplicarFiltro()">🔍 Aplicar filtro</button>
+          <button class="btn btn-outline-secondary" onclick="limpiarFiltros()">Limpiar todo</button>
+          <button class="btn btn-outline-success ms-auto" onclick="exportarCSV()" id="btn-exportar" disabled>📥 Exportar CSV</button>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <h6 class="mb-0">Resultados: <span id="total-result">0</span> OPTs</h6>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped" id="tabla-resultados">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Región</th>
+                <th>Estado</th>
+                <th class="text-center">Reporte</th>
+                <th class="text-center">Estatus</th>
+                <th class="text-center">Legalidad</th>
+                <th>Último reporte</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="filtros.js?v=1"></script>
+</body>
+</html>
