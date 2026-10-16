@@ -63,15 +63,21 @@
     </div>
 
     <!-- CONTENEDOR DE LISTA -->
+    <div class="mb-2 text-end text-white-50 small">
+      <strong>Total OPTs:</strong> <span id="total-opts">0</span>
+    </div>
+
     <div class="card shadow-sm">
-      <div class="card-header bg-secondary text-white">
-        <strong id="tituloNivel">Regiones</strong>
+      <div class="card-header bg-secondary text-white d-flex align-items-center">
+        <strong id="tituloNivel" style="flex: 1;">Regiones</strong>
+        <div style="width:200px;" class="text-center small">Reporte</div>
+        <div style="width:200px;" class="text-center small">Estatus</div>
+        <div style="width:200px;" class="text-center small">Legalidad</div>
       </div>
       <div class="card-body p-0" id="contenedorLista">
         <div class="text-center text-muted py-4">Cargando...</div>
       </div>
     </div>
-  </div>
 
   <!-- MODAL HISTORIAL -->
   <div class="modal fade" id="modalHistorial" tabindex="-1">
