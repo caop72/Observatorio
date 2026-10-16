@@ -1,8 +1,6 @@
 /**************************************************************
- * OEP - Panel Jerárquico (v6)
- * Navegación: Región → Estado → OPT
+ * OEP - Panel Jerárquico (v7)
  * Columnas: Reporte | Estatus | Legalidad
- * Leyenda dinámica según el nivel actual
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -194,38 +192,81 @@ function renderListaOpts() {
 }
 
 // ============================================================
-// FILAS
+// FILAS (bloques de contadores)
 // ============================================================
-function renderFilaRegion(region) {
-  const c = region.contadores || { estatus: { inoperativa: 0, porCierreTecnico: 0 } };
+function renderBloqueReporte(c) {
   return `
-    <div class="fila-ente d-flex align-items-center justify-content-between px-3 py-3 border-bottom"
+    <span class="semaforo-punto contador-blanco" title="${c.reporte.enPlazo} en plazo">${c.reporte.enPlazo}</span>
+    <span class="semaforo-punto contador-verde" title="${c.reporte.sinNovedad} sin novedad">${c.reporte.sinNovedad}</span>
+    <span class="semaforo-punto contador-amarillo" title="${c.reporte.objetado} objetado">${c.reporte.objetado}</span>
+    <span class="semaforo-punto contador-rojo" title="${c.reporte.sinReportar} sin reportar">${c.reporte.sinReportar}</span>
+  `;
+}
+
+function renderBloqueEstatus(c) {
+  return `
+    <span class="semaforo-punto contador-verde" title="${c.estatus.operativa} operativas">${c.estatus.operativa}</span>
+    <span class="semaforo-punto contador-naranja" title="${c.estatus.inoperativa} inoperativas">${c.estatus.inoperativa}</span>
+    <span class="semaforo-punto contador-rojo" title="${c.estatus.porCierreTecnico} por cierre técnico">${c.estatus.porCierreTecnico}</span>
+  `;
+}
+
+function renderBloqueLegalidad(c) {
+  return `
+    <span class="semaforo-punto contador-verde" title="${c.legalidad.propia} propias">${c.legalidad.propia}</span>
+    <span class="semaforo-punto contador-naranja" title="${c.legalidad.arrendada} arrendadas">${c.legalidad.arrendada}</span>
+    <span class="semaforo-punto contador-amarillo" title="${c.legalidad.comodato} comodato">${c.legalidad.comodato}</span>
+  `;
+}
+
+function renderFilaRegion(region) {
+  const c = region.contadores || {
+    reporte:   { enPlazo: 0, sinNovedad: 0, objetado: 0, sinReportar: 0 },
+    estatus:   { operativa: 0, inoperativa: 0, porCierreTecnico: 0 },
+    legalidad: { propia: 0, arrendada: 0, comodato: 0 }
+  };
+  return `
+    <div class="fila-ente d-flex align-items-center px-3 py-3 border-bottom"
          onclick="entrarRegion('${escapeAttr(region.nombre)}')" style="cursor:pointer;">
-      <div class="d-flex align-items-center gap-2 flex-grow-1">
+      <div class="flex-grow-1">
         <span class="nombre-ente">${escapeHtml(region.nombre)}</span>
-        <span class="puntos-dotted"></span>
-        ${renderIndicador(region.color)}
-        <span class="semaforo-punto contador-naranja" title="${c.estatus.inoperativa} inoperativas">${c.estatus.inoperativa}</span>
-        <span class="semaforo-punto contador-rojo" title="${c.estatus.porCierreTecnico} por cierre técnico">${c.estatus.porCierreTecnico}</span>
+        <span class="text-primary fs-5 ms-2">›</span>
       </div>
-      <span class="text-primary fs-5">›</span>
+      <div style="width:200px;" class="text-center d-flex justify-content-center gap-1">
+        ${renderBloqueReporte(c)}
+      </div>
+      <div style="width:200px;" class="text-center d-flex justify-content-center gap-1">
+        ${renderBloqueEstatus(c)}
+      </div>
+      <div style="width:200px;" class="text-center d-flex justify-content-center gap-1">
+        ${renderBloqueLegalidad(c)}
+      </div>
     </div>
   `;
 }
 
 function renderFilaEstado(estado) {
-  const c = estado.contadores || { estatus: { inoperativa: 0, porCierreTecnico: 0 } };
+  const c = estado.contadores || {
+    reporte:   { enPlazo: 0, sinNovedad: 0, objetado: 0, sinReportar: 0 },
+    estatus:   { operativa: 0, inoperativa: 0, porCierreTecnico: 0 },
+    legalidad: { propia: 0, arrendada: 0, comodato: 0 }
+  };
   return `
-    <div class="fila-ente d-flex align-items-center justify-content-between px-3 py-3 border-bottom"
+    <div class="fila-ente d-flex align-items-center px-3 py-3 border-bottom"
          onclick="entrarEstado('${escapeAttr(estado.nombre)}')" style="cursor:pointer;">
-      <div class="d-flex align-items-center gap-2 flex-grow-1">
+      <div class="flex-grow-1">
         <span class="nombre-ente">${escapeHtml(estado.nombre)}</span>
-        <span class="puntos-dotted"></span>
-        ${renderIndicador(estado.color)}
-        <span class="semaforo-punto contador-naranja" title="${c.estatus.inoperativa} inoperativas">${c.estatus.inoperativa}</span>
-        <span class="semaforo-punto contador-rojo" title="${c.estatus.porCierreTecnico} por cierre técnico">${c.estatus.porCierreTecnico}</span>
+        <span class="text-primary fs-5 ms-2">›</span>
       </div>
-      <span class="text-primary fs-5">›</span>
+      <div style="width:200px;" class="text-center d-flex justify-content-center gap-1">
+        ${renderBloqueReporte(c)}
+      </div>
+      <div style="width:200px;" class="text-center d-flex justify-content-center gap-1">
+        ${renderBloqueEstatus(c)}
+      </div>
+      <div style="width:200px;" class="text-center d-flex justify-content-center gap-1">
+        ${renderBloqueLegalidad(c)}
+      </div>
     </div>
   `;
 }
@@ -311,24 +352,22 @@ function actualizarContadoresLeyenda() {
     legalidad: { propia: 0, arrendada: 0, comodato: 0 }
   };
 
-  // Recolectar los estados visibles según el nivel actual
   let estadosVisibles = [];
 
   if (NIVEL === 0) {
-    // Todas las regiones → todos los estados
     ARBOL.forEach(r => (r.estados || []).forEach(e => estadosVisibles.push(e)));
   } else if (NIVEL === 1) {
-    // Una región → sus estados
     const region = ARBOL.find(r => r.nombre === REGION_SEL);
     if (region) (region.estados || []).forEach(e => estadosVisibles.push(e));
   } else if (NIVEL === 2) {
-    // Un estado → su propio contador
     const region = ARBOL.find(r => r.nombre === REGION_SEL);
     if (region) {
       const estado = region.estados.find(e => e.nombre === ESTADO_SEL);
       if (estado) estadosVisibles.push(estado);
     }
   }
+
+  let totalOpts = 0;
 
   estadosVisibles.forEach(e => {
     if (!e.contadores) return;
@@ -344,6 +383,8 @@ function actualizarContadoresLeyenda() {
     c.legalidad.propia    += e.contadores.legalidad.propia;
     c.legalidad.arrendada += e.contadores.legalidad.arrendada;
     c.legalidad.comodato  += e.contadores.legalidad.comodato;
+
+    totalOpts += (e.opts || []).length;
   });
 
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -357,6 +398,7 @@ function actualizarContadoresLeyenda() {
   set('cnt-leg-propia',        c.legalidad.propia);
   set('cnt-leg-arrendada',     c.legalidad.arrendada);
   set('cnt-leg-comodato',      c.legalidad.comodato);
+  set('total-opts',            totalOpts);
 }
 
 // ============================================================
