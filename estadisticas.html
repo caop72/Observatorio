@@ -169,6 +169,10 @@
         if (!U) return;
         var rol = (U.rol || U.cargo || '').toString();
         var verJerarquia = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado','Jefe de OPT'];
+        var verFiltros = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado'];
+        if (verFiltros.indexOf(rol) !== -1) {
+          document.getElementById('nav-filtros').style.display = '';
+        }
         var verCalendario = ['Observatorio','CNC'];
         if (verJerarquia.indexOf(rol) !== -1) {
           document.getElementById('nav-jerarquia').style.display = '';
