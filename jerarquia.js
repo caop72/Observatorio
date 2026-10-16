@@ -207,4 +207,142 @@ function renderFilaOpt(opt) {
   const inactivaTag = !opt.activa ? ' <small class="badge bg-warning text-dark">INACTIVA</small>' : '';
   return `
     <div class="fila-ente d-flex align-items-center px-3 py-3 border-bottom"
-         onclick
+         onclick="abrirHistorialOpt('${escapeAttr(opt.id)}','${escapeAttr(opt.nombre)}')" style="cursor:pointer;">
+      <div class="flex-grow-1">
+        <span class="nombre-ente">${escapeHtml(opt.nombre)} <small class="text-muted">(${escapeHtml(opt.id)})</small></span>${inactivaTag}
+      </div>
+      <div style="width:80px;" class="text-center">${renderIndicador(opt.color)}</div>
+      <div style="width:80px;" class="text-center">${renderIndicador(opt.colorEstatus || 'blanco')}</div>
+      <div style="width:80px;" class="text-center">${renderIndicador(opt.colorLegalidad || 'blanco')}</div>
+      <div style="width:20px;" class="text-end text-primary fs-6">›</div>
+    </div>
+  `;
+}
+
+function entrarRegion(nombre) {
+  REGION_SEL = nombre;
+  ESTADO_SEL = null;
+  NIVEL = 1;
+  renderNivel();
+  window.scrollTo(0, 0);
+}
+function entrarEstado(nombre) {
+  ESTADO_SEL = nombre;
+  NIVEL = 2;
+  renderNivel();
+  window.scrollTo(0, 0);
+}
+function volverNivel() {
+  if (NIVEL === 2) { NIVEL = 1; ESTADO_SEL = null; }
+  else if (NIVEL === 1) { NIVEL = 0; REGION_SEL = null; }
+  renderNivel();
+  window.scrollTo(0, 0);
+}
+function actualizarMigas() {
+  const migas = document.getElementById('migasPan');
+  let html = '<li class="breadcrumb-item"><a href="#" class="text-white-50" onclick="volverNivel();return false;">Inicio</a></li>';
+  if (NIVEL >= 1 && REGION_SEL) {
+    html += '<li class="breadcrumb-item text-white">' + escapeHtml(REGION_SEL) + '</li>';
+  }
+  if (NIVEL >= 2 && ESTADO_SEL) {
+    html += '<li class="breadcrumb-item text-white">' + escapeHtml(ESTADO_SEL) + '</li>';
+  }
+  migas.innerHTML = html;
+}
+
+function renderIndicador(color) {
+  return `<span class="semaforo-punto ${color}" title="${tituloColor(color)}"></span>`;
+}
+function renderContadorInactivas(n) {
+  if (!n || n <= 0) return '';
+  return `<span class="semaforo-punto naranja-contador" title="${n} OPTs inactivas">${n}</span>`;
+}
+function tituloColor(color) {
+  const map = {
+    verde: 'OK / Sin novedad',
+    amarillo: 'Atención (por reparar / comodato)',
+    rojo: 'Alarmante (sin reportar / cierre técnico)',
+    blanco: 'Sin dato / En plazo',
+    naranja: 'Inactiva / Arrendada'
+  };
+  return map[color] || color;
+}
+
+async function abrirHistorialOpt(idOpt, nombreOpt) {
+  const modal = new bootstrap.Modal(document.getElementById('modalHistorial'));
+  document.getElementById('modalTitulo').textContent = 'Historial — ' + nombreOpt + ' (' + idOpt + ')';
+  document.getElementById('contenidoHistorial').innerHTML =
+    '<div class="text-center text-muted py-4">Cargando...</div>';
+  modal.show();
+
+  try {
+    const data = await apiGet({
+      accion: 'obtenerHistorialEnte',
+      token: TOKEN,
+      tipoEnte: 'OPT',
+      idEnte: idOpt
+    });
+    if (!data.ok) {
+      document.getElementById('contenidoHistorial').innerHTML =
+        '<div class="alert alert-danger">' + (data.error || 'Error') + '</div>';
+      return;
+    }
+    renderHistorial(data.acciones || []);
+  } catch (e) {
+    document.getElementById('contenidoHistorial').innerHTML =
+      '<div class="alert alert-danger">Error: ' + e.message + '</div>';
+  }
+}
+
+function renderHistorial(acciones) {
+  const cont = document.getElementById('contenidoHistorial');
+  if (!acciones.length) {
+    cont.innerHTML = '<div class="text-center text-muted py-4">No hay acciones registradas.</div>';
+    return;
+  }
+  let html = `
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Fecha</th><th>Hora</th><th>Reporte</th><th>Usuario</th>
+            <th>Rol</th><th>Acción</th><th>Comentario</th>
+          </tr>
+        </thead><tbody>
+  `;
+  acciones.forEach(a => {
+    html += `
+      <tr>
+        <td>${formatearFecha(a.fecha)}</td>
+        <td>${formatearHora(a.hora)}</td>
+        <td><code>${escapeHtml(a.idReporte || '')}</code></td>
+        <td>${escapeHtml(a.usuario || '')}</td>
+        <td><span class="badge bg-secondary">${escapeHtml(a.rol || '')}</span></td>
+        <td>${escapeHtml(a.accion || '')}</td>
+        <td>${escapeHtml(a.comentario || '')}</td>
+      </tr>`;
+  });
+  html += '</tbody></table></div>';
+  cont.innerHTML = html;
+}
+
+function formatearFecha(f) {
+  if (!f) return '';
+  if (typeof f === 'string' && f.length >= 10) {
+    const p = f.substring(0, 10).split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+  return String(f);
+}
+function formatearHora(h) {
+  if (!h) return '';
+  return String(h).substring(0, 5);
+}
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function escapeAttr(s) {
+  return String(s == null ? '' : s).replace(/'/g, "\\'");
+}
