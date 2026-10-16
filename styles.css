@@ -313,3 +313,30 @@ a { color: #1a3d7c; font-weight: 600; }
 body {
   background-color: #f8f9fa;
 }
+
+/* Contadores circulares genéricos (cualquier color) */
+.semaforo-punto.contador-blanco,
+.semaforo-punto.contador-verde,
+.semaforo-punto.contador-amarillo,
+.semaforo-punto.contador-rojo,
+.semaforo-punto.contador-naranja {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  border: none;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.semaforo-punto.contador-blanco   { background-color: #f8f9fa; color: #212529; border: 2px solid #6c757d; }
+.semaforo-punto.contador-verde    { background-color: #28a745; }
+.semaforo-punto.contador-amarillo { background-color: #ffc107; color: #212529; }
+.semaforo-punto.contador-rojo     { background-color: #dc3545; }
+.semaforo-punto.contador-naranja  { background-color: #fd7e14; }
