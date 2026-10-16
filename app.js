@@ -6,13 +6,13 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
 
 const REGIONES_ESTADOS = {
-  'Andina':       ['Mérida', 'Trujillo', 'Táchira'],
-  'Capital':      ['Distrito Capital', 'Miranda', 'Vargas'],
+  'Andina':       ['Barinas', 'Mérida', 'Táchira', 'Trujillo'],
+  'Capital':      ['Distrito Capital', 'Miranda', 'La Guaira'],
   'Central':      ['Aragua', 'Carabobo', 'Cojedes'],
-  'Centro Llano': ['Apure', 'Barinas', 'Guárico', 'Portuguesa'],
+  'Centro Llano': ['Apure', 'Guárico', 'Portuguesa'],
   'Occidente':    ['Falcón', 'Lara', 'Yaracuy', 'Zulia'],
-  'Oriente':      ['Anzoátegui', 'Bolívar', 'Delta Amacuro', 'Monagas',
-                   'Nueva Esparta', 'Sucre', 'Amazonas']
+  'Oriente':      ['Amazonas', 'Anzoátegui', 'Bolívar', 'Delta Amacuro',
+                   'Monagas', 'Nueva Esparta', 'Sucre']
 };
 
 // ============================================================
