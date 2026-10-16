@@ -32,27 +32,25 @@
     </div>
 
     <!-- LEYENDA -->
-    <div class="small text-white-50 mb-3">
-      <div class="mb-1">
+        <div class="small text-white-50 mb-3" id="leyenda">
+      <div class="mb-1 d-flex flex-wrap gap-3 align-items-center">
         <strong class="text-white">📊 Reporte:</strong>
-        <span class="me-2"><span class="semaforo-punto blanco"></span> En plazo</span>
-        <span class="me-2"><span class="semaforo-punto verde"></span> Sin novedad</span>
-        <span class="me-2"><span class="semaforo-punto amarillo"></span> Objetado</span>
-        <span class="me-2"><span class="semaforo-punto rojo"></span> Sin reportar (2+ días)</span>
+        <span><span class="semaforo-punto blanco"></span> <span id="cnt-rep-enplazo">0</span> En plazo</span>
+        <span><span class="semaforo-punto verde"></span> <span id="cnt-rep-sinnovedad">0</span> Sin novedad</span>
+        <span><span class="semaforo-punto amarillo"></span> <span id="cnt-rep-objetado">0</span> Objetado</span>
+        <span><span class="semaforo-punto rojo"></span> <span id="cnt-rep-sinreportar">0</span> Sin reportar (2+ días)</span>
       </div>
-      <div class="mb-1">
+      <div class="mb-1 d-flex flex-wrap gap-3 align-items-center">
         <strong class="text-white">🏛️ Estatus:</strong>
-        <span class="me-2"><span class="semaforo-punto verde"></span> Operativa</span>
-        <span class="me-2"><span class="semaforo-punto naranja"></span> Inoperativa</span>
-        <span class="me-2"><span class="semaforo-punto rojo"></span> Cierre Técnico</span>
-        <span class="me-2 ms-4"><span class="semaforo-punto naranja-contador" id="tot-inactivas">0</span> Inactivas</span>
-        <span class="me-2"><span class="semaforo-punto rojo-contador" id="tot-cierre-tecnico">0</span> Cierre Técnico</span>
+        <span><span class="semaforo-punto verde"></span> <span id="cnt-est-operativa">0</span> Operativa</span>
+        <span><span class="semaforo-punto naranja"></span> <span id="cnt-est-inoperativa">0</span> Inoperativa</span>
+        <span><span class="semaforo-punto rojo"></span> <span id="cnt-est-porcierre">0</span> Por Cierre Técnico</span>
       </div>
-      <div>
+      <div class="d-flex flex-wrap gap-3 align-items-center">
         <strong class="text-white">📄 Legalidad:</strong>
-        <span class="me-2"><span class="semaforo-punto verde"></span> Propia</span>
-        <span class="me-2"><span class="semaforo-punto naranja"></span> Arrendada</span>
-        <span class="me-2"><span class="semaforo-punto amarillo"></span> Comodato</span>
+        <span><span class="semaforo-punto verde"></span> <span id="cnt-leg-propia">0</span> Propia</span>
+        <span><span class="semaforo-punto naranja"></span> <span id="cnt-leg-arrendada">0</span> Arrendada</span>
+        <span><span class="semaforo-punto amarillo"></span> <span id="cnt-leg-comodato">0</span> Comodato</span>
       </div>
     </div>
 
