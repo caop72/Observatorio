@@ -1,5 +1,7 @@
 /**************************************************************
- * OEP - Panel Jerárquico (v4 — 3 columnas de indicadores)
+ * OEP - Panel Jerárquico (v5 — 3 columnas de indicadores)
+ * Navegación: Región → Estado → OPT
+ * Columnas: Reporte | Estatus | Legalidad
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -11,6 +13,9 @@ let NIVEL = 0;
 let REGION_SEL = null;
 let ESTADO_SEL = null;
 
+// ============================================================
+// ARRANQUE
+// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   let U = null;
   try { U = JSON.parse(localStorage.getItem('oep_usuario') || 'null'); } catch(e) {}
@@ -24,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarArbol();
 });
 
+// ============================================================
+// CERRAR SESIÓN
+// ============================================================
 function cerrarSesion() {
   const t = TOKEN;
   localStorage.removeItem('oep_usuario');
@@ -38,6 +46,9 @@ function cerrarSesion() {
   }
 }
 
+// ============================================================
+// API
+// ============================================================
 async function apiGet(params) {
   const url = new URL(API_URL);
   Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
@@ -45,6 +56,9 @@ async function apiGet(params) {
   return await res.json();
 }
 
+// ============================================================
+// CARGA INICIAL
+// ============================================================
 async function cargarArbol() {
   document.getElementById('contenedorLista').innerHTML =
     '<div class="text-center text-muted py-4">Cargando...</div>';
@@ -65,6 +79,25 @@ async function cargarArbol() {
   }
 }
 
+// ============================================================
+// TOTALES NACIONALES (leyenda superior)
+// ============================================================
+function actualizarTotalesNacionales() {
+  let totalInactivas = 0;
+  let totalCierre = 0;
+  ARBOL.forEach(r => {
+    totalInactivas += (r.inactivas || 0);
+    totalCierre += (r.cierreTecnico || 0);
+  });
+  const el1 = document.getElementById('tot-inactivas');
+  const el2 = document.getElementById('tot-cierre-tecnico');
+  if (el1) el1.textContent = totalInactivas;
+  if (el2) el2.textContent = totalCierre;
+}
+
+// ============================================================
+// RENDER PRINCIPAL
+// ============================================================
 function renderNivel() {
   const cargo = USUARIO ? USUARIO.cargo : '';
   const titulo = document.getElementById('tituloNivel');
@@ -174,6 +207,9 @@ function renderListaOpts() {
   cont.innerHTML = renderCabeceraOpts() + estado.opts.map(o => renderFilaOpt(o)).join('');
 }
 
+// ============================================================
+// FILAS
+// ============================================================
 function renderFilaRegion(region) {
   return `
     <div class="fila-ente d-flex align-items-center justify-content-between px-3 py-3 border-bottom"
@@ -222,6 +258,9 @@ function renderFilaOpt(opt) {
   `;
 }
 
+// ============================================================
+// NAVEGACIÓN
+// ============================================================
 function entrarRegion(nombre) {
   REGION_SEL = nombre;
   ESTADO_SEL = null;
@@ -229,18 +268,21 @@ function entrarRegion(nombre) {
   renderNivel();
   window.scrollTo(0, 0);
 }
+
 function entrarEstado(nombre) {
   ESTADO_SEL = nombre;
   NIVEL = 2;
   renderNivel();
   window.scrollTo(0, 0);
 }
+
 function volverNivel() {
   if (NIVEL === 2) { NIVEL = 1; ESTADO_SEL = null; }
   else if (NIVEL === 1) { NIVEL = 0; REGION_SEL = null; }
   renderNivel();
   window.scrollTo(0, 0);
 }
+
 function actualizarMigas() {
   const migas = document.getElementById('migasPan');
   let html = '<li class="breadcrumb-item"><a href="#" class="text-white-50" onclick="volverNivel();return false;">Inicio</a></li>';
@@ -253,9 +295,13 @@ function actualizarMigas() {
   migas.innerHTML = html;
 }
 
+// ============================================================
+// INDICADORES
+// ============================================================
 function renderIndicador(color) {
   return `<span class="semaforo-punto ${color}" title="${tituloColor(color)}"></span>`;
 }
+
 function renderContadorInactivas(n) {
   if (!n || n <= 0) return '';
   return `<span class="semaforo-punto naranja-contador" title="${n} OPTs inactivas">${n}</span>`;
@@ -265,6 +311,7 @@ function renderContadorCierreTecnico(n) {
   if (!n || n <= 0) return '';
   return `<span class="semaforo-punto rojo-contador" title="${n} OPTs en cierre técnico">${n}</span>`;
 }
+
 function tituloColor(color) {
   const map = {
     verde: 'OK / Sin novedad',
@@ -276,6 +323,9 @@ function tituloColor(color) {
   return map[color] || color;
 }
 
+// ============================================================
+// HISTORIAL DE OPT
+// ============================================================
 async function abrirHistorialOpt(idOpt, nombreOpt) {
   const modal = new bootstrap.Modal(document.getElementById('modalHistorial'));
   document.getElementById('modalTitulo').textContent = 'Historial — ' + nombreOpt + ' (' + idOpt + ')';
@@ -334,6 +384,9 @@ function renderHistorial(acciones) {
   cont.innerHTML = html;
 }
 
+// ============================================================
+// UTILIDADES
+// ============================================================
 function formatearFecha(f) {
   if (!f) return '';
   if (typeof f === 'string' && f.length >= 10) {
@@ -342,39 +395,18 @@ function formatearFecha(f) {
   }
   return String(f);
 }
+
 function formatearHora(h) {
   if (!h) return '';
   return String(h).substring(0, 5);
 }
+
 function escapeHtml(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-function actualizarTotalesNacionales() {
-  let totalInactivas = 0;
-  let totalCierre = 0;
-  ARBOL.forEach(r => {
-    totalInactivas += (r.inactivas || 0);
-    totalCierre += (r.cierreTecnico || 0);
-  });
-  const el1 = document.getElementById('tot-inactivas');
-  const el2 = document.getElementById('tot-cierre-tecnico');
-  if (el1) el1.textContent = totalInactivas;
-  if (el2) el2.textContent = totalCierre;
-}
+
 function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/'/g, "\\'");
-}
-function actualizarTotalesNacionales() {
-  let totalInactivas = 0;
-  let totalCierre = 0;
-  ARBOL.forEach(r => {
-    totalInactivas += (r.inactivas || 0);
-    totalCierre += (r.cierreTecnico || 0);
-  });
-  const el1 = document.getElementById('tot-inactivas');
-  const el2 = document.getElementById('tot-cierre-tecnico');
-  if (el1) el1.textContent = totalInactivas;
-  if (el2) el2.textContent = totalCierre;
 }
