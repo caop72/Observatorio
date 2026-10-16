@@ -410,3 +410,41 @@ function escapeHtml(s) {
 function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/'/g, "\\'");
 }
+
+function actualizarContadoresLeyenda() {
+  const c = {
+    reporte:   { enPlazo: 0, sinNovedad: 0, objetado: 0, sinReportar: 0 },
+    estatus:   { operativa: 0, inoperativa: 0, porCierreTecnico: 0 },
+    legalidad: { propia: 0, arrendada: 0, comodato: 0 }
+  };
+
+  ARBOL.forEach(r => {
+    (r.estados || []).forEach(e => {
+      if (!e.contadores) return;
+      c.reporte.enPlazo     += e.contadores.reporte.enPlazo;
+      c.reporte.sinNovedad  += e.contadores.reporte.sinNovedad;
+      c.reporte.objetado    += e.contadores.reporte.objetado;
+      c.reporte.sinReportar += e.contadores.reporte.sinReportar;
+
+      c.estatus.operativa        += e.contadores.estatus.operativa;
+      c.estatus.inoperativa      += e.contadores.estatus.inoperativa;
+      c.estatus.porCierreTecnico += e.contadores.estatus.porCierreTecnico;
+
+      c.legalidad.propia    += e.contadores.legalidad.propia;
+      c.legalidad.arrendada += e.contadores.legalidad.arrendada;
+      c.legalidad.comodato  += e.contadores.legalidad.comodato;
+    });
+  });
+
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('cnt-rep-enplazo',       c.reporte.enPlazo);
+  set('cnt-rep-sinnovedad',    c.reporte.sinNovedad);
+  set('cnt-rep-objetado',      c.reporte.objetado);
+  set('cnt-rep-sinreportar',   c.reporte.sinReportar);
+  set('cnt-est-operativa',     c.estatus.operativa);
+  set('cnt-est-inoperativa',   c.estatus.inoperativa);
+  set('cnt-est-porcierre',     c.estatus.porCierreTecnico);
+  set('cnt-leg-propia',        c.legalidad.propia);
+  set('cnt-leg-arrendada',     c.legalidad.arrendada);
+  set('cnt-leg-comodato',      c.legalidad.comodato);
+}
