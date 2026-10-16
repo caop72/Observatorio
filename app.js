@@ -144,26 +144,14 @@ async function hacerRegistro() {
   msg.textContent = 'Registrando...';
 
   try {
-    // Si es Jefe de OPT → primero crear la OPT
+    // Si es Jefe de OPT → exigir OPT seleccionada
     if (datos.cargo === 'Jefe de OPT') {
-      const nombreOpt = document.getElementById('reg-opt-nombre').value.trim();
-      const municipio = document.getElementById('reg-municipio').value;
-      const parroquia = document.getElementById('reg-parroquia').value;
-
-      if (!nombreOpt || !datos.estado || !municipio || !parroquia) {
-        msg.textContent = 'Faltan datos de la OPT (nombre, estado, municipio, parroquia)';
+      const idOpt = document.getElementById('reg-opt').value;
+      if (!idOpt) {
+        msg.textContent = 'Debes seleccionar la OPT';
         return;
       }
-
-      const rOpt = await llamarAPI('crearOpt', {
-        nombre: nombreOpt,
-        estado: datos.estado,
-        municipio: municipio,
-        parroquia: parroquia
-      });
-
-      if (!rOpt.ok) { msg.textContent = 'OPT: ' + rOpt.error; return; }
-      datos.opt = rOpt.idOpt;
+      datos.opt = idOpt;
     }
 
     const r = await llamarAPI('registrar', datos);
@@ -212,9 +200,7 @@ function toggleBloqueOpt() {
   const cargo = document.getElementById('reg-cargo').value;
   const mostrar = (cargo === 'Jefe de OPT');
   const bloqueOpt = document.getElementById('bloque-opt');
-  const bloqueGeo = document.getElementById('bloque-geo-opt');
   if (bloqueOpt) bloqueOpt.style.display = mostrar ? '' : 'none';
-  if (bloqueGeo) bloqueGeo.style.display = mostrar ? '' : 'none';
 }
 
 async function cargarOptsRegistro() {
