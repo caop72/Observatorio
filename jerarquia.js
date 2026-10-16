@@ -257,6 +257,11 @@ function renderContadorInactivas(n) {
   if (!n || n <= 0) return '';
   return `<span class="semaforo-punto naranja-contador" title="${n} OPTs inactivas">${n}</span>`;
 }
+
+function renderContadorCierreTecnico(n) {
+  if (!n || n <= 0) return '';
+  return `<span class="semaforo-punto rojo-contador" title="${n} OPTs en cierre técnico">${n}</span>`;
+}
 function tituloColor(color) {
   const map = {
     verde: 'OK / Sin novedad',
