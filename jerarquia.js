@@ -1,7 +1,8 @@
 /**************************************************************
- * OEP - Panel Jerárquico (v5 — 3 columnas de indicadores)
+ * OEP - Panel Jerárquico (v6)
  * Navegación: Región → Estado → OPT
  * Columnas: Reporte | Estatus | Legalidad
+ * Leyenda dinámica según el nivel actual
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -71,8 +72,6 @@ async function cargarArbol() {
     }
     ARBOL = data.arbol || [];
     NIVEL = 0;
-    actualizarContadoresLeyenda();
-    actualizarTotalesNacionales();
     renderNivel();
   } catch (e) {
     document.getElementById('contenedorLista').innerHTML =
@@ -81,25 +80,11 @@ async function cargarArbol() {
 }
 
 // ============================================================
-// TOTALES NACIONALES (leyenda superior)
-// ============================================================
-function actualizarTotalesNacionales() {
-  let totalInactivas = 0;
-  let totalCierre = 0;
-  ARBOL.forEach(r => {
-    totalInactivas += (r.inactivas || 0);
-    totalCierre += (r.cierreTecnico || 0);
-  });
-  const el1 = document.getElementById('tot-inactivas');
-  const el2 = document.getElementById('tot-cierre-tecnico');
-  if (el1) el1.textContent = totalInactivas;
-  if (el2) el2.textContent = totalCierre;
-}
-
-// ============================================================
 // RENDER PRINCIPAL
 // ============================================================
 function renderNivel() {
+  actualizarContadoresLeyenda();
+
   const cargo = USUARIO ? USUARIO.cargo : '';
   const titulo = document.getElementById('tituloNivel');
   const barra = document.getElementById('barraNavegacion');
@@ -212,7 +197,7 @@ function renderListaOpts() {
 // FILAS
 // ============================================================
 function renderFilaRegion(region) {
-  const c = region.contadores || { estatus: { operativa: 0, inoperativa: 0, porCierreTecnico: 0 } };
+  const c = region.contadores || { estatus: { inoperativa: 0, porCierreTecnico: 0 } };
   return `
     <div class="fila-ente d-flex align-items-center justify-content-between px-3 py-3 border-bottom"
          onclick="entrarRegion('${escapeAttr(region.nombre)}')" style="cursor:pointer;">
@@ -229,7 +214,7 @@ function renderFilaRegion(region) {
 }
 
 function renderFilaEstado(estado) {
-  const c = estado.contadores || { estatus: { operativa: 0, inoperativa: 0, porCierreTecnico: 0 } };
+  const c = estado.contadores || { estatus: { inoperativa: 0, porCierreTecnico: 0 } };
   return `
     <div class="fila-ente d-flex align-items-center justify-content-between px-3 py-3 border-bottom"
          onclick="entrarEstado('${escapeAttr(estado.nombre)}')" style="cursor:pointer;">
@@ -305,25 +290,73 @@ function renderIndicador(color) {
   return `<span class="semaforo-punto ${color}" title="${tituloColor(color)}"></span>`;
 }
 
-function renderContadorInactivas(n) {
-  if (!n || n <= 0) return '';
-  return `<span class="semaforo-punto naranja-contador" title="${n} OPTs inactivas">${n}</span>`;
-}
-
-function renderContadorCierreTecnico(n) {
-  if (!n || n <= 0) return '';
-  return `<span class="semaforo-punto rojo-contador" title="${n} OPTs en cierre técnico">${n}</span>`;
-}
-
 function tituloColor(color) {
   const map = {
     verde: 'OK / Sin novedad',
     amarillo: 'Atención (por reparar / comodato)',
     rojo: 'Alarmante (sin reportar / cierre técnico)',
     blanco: 'Sin dato / En plazo',
-    naranja: 'Inactiva / Arrendada'
+    naranja: 'Inoperativa / Arrendada'
   };
   return map[color] || color;
+}
+
+// ============================================================
+// CONTADORES DE LEYENDA (según nivel actual)
+// ============================================================
+function actualizarContadoresLeyenda() {
+  const c = {
+    reporte:   { enPlazo: 0, sinNovedad: 0, objetado: 0, sinReportar: 0 },
+    estatus:   { operativa: 0, inoperativa: 0, porCierreTecnico: 0 },
+    legalidad: { propia: 0, arrendada: 0, comodato: 0 }
+  };
+
+  // Recolectar los estados visibles según el nivel actual
+  let estadosVisibles = [];
+
+  if (NIVEL === 0) {
+    // Todas las regiones → todos los estados
+    ARBOL.forEach(r => (r.estados || []).forEach(e => estadosVisibles.push(e)));
+  } else if (NIVEL === 1) {
+    // Una región → sus estados
+    const region = ARBOL.find(r => r.nombre === REGION_SEL);
+    if (region) (region.estados || []).forEach(e => estadosVisibles.push(e));
+  } else if (NIVEL === 2) {
+    // Un estado → su propio contador
+    const region = ARBOL.find(r => r.nombre === REGION_SEL);
+    if (region) {
+      const estado = region.estados.find(e => e.nombre === ESTADO_SEL);
+      if (estado) estadosVisibles.push(estado);
+    }
+  }
+
+  estadosVisibles.forEach(e => {
+    if (!e.contadores) return;
+    c.reporte.enPlazo     += e.contadores.reporte.enPlazo;
+    c.reporte.sinNovedad  += e.contadores.reporte.sinNovedad;
+    c.reporte.objetado    += e.contadores.reporte.objetado;
+    c.reporte.sinReportar += e.contadores.reporte.sinReportar;
+
+    c.estatus.operativa        += e.contadores.estatus.operativa;
+    c.estatus.inoperativa      += e.contadores.estatus.inoperativa;
+    c.estatus.porCierreTecnico += e.contadores.estatus.porCierreTecnico;
+
+    c.legalidad.propia    += e.contadores.legalidad.propia;
+    c.legalidad.arrendada += e.contadores.legalidad.arrendada;
+    c.legalidad.comodato  += e.contadores.legalidad.comodato;
+  });
+
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('cnt-rep-enplazo',       c.reporte.enPlazo);
+  set('cnt-rep-sinnovedad',    c.reporte.sinNovedad);
+  set('cnt-rep-objetado',      c.reporte.objetado);
+  set('cnt-rep-sinreportar',   c.reporte.sinReportar);
+  set('cnt-est-operativa',     c.estatus.operativa);
+  set('cnt-est-inoperativa',   c.estatus.inoperativa);
+  set('cnt-est-porcierre',     c.estatus.porCierreTecnico);
+  set('cnt-leg-propia',        c.legalidad.propia);
+  set('cnt-leg-arrendada',     c.legalidad.arrendada);
+  set('cnt-leg-comodato',      c.legalidad.comodato);
 }
 
 // ============================================================
@@ -412,42 +445,4 @@ function escapeHtml(s) {
 
 function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/'/g, "\\'");
-}
-
-function actualizarContadoresLeyenda() {
-  const c = {
-    reporte:   { enPlazo: 0, sinNovedad: 0, objetado: 0, sinReportar: 0 },
-    estatus:   { operativa: 0, inoperativa: 0, porCierreTecnico: 0 },
-    legalidad: { propia: 0, arrendada: 0, comodato: 0 }
-  };
-
-  ARBOL.forEach(r => {
-    (r.estados || []).forEach(e => {
-      if (!e.contadores) return;
-      c.reporte.enPlazo     += e.contadores.reporte.enPlazo;
-      c.reporte.sinNovedad  += e.contadores.reporte.sinNovedad;
-      c.reporte.objetado    += e.contadores.reporte.objetado;
-      c.reporte.sinReportar += e.contadores.reporte.sinReportar;
-
-      c.estatus.operativa        += e.contadores.estatus.operativa;
-      c.estatus.inoperativa      += e.contadores.estatus.inoperativa;
-      c.estatus.porCierreTecnico += e.contadores.estatus.porCierreTecnico;
-
-      c.legalidad.propia    += e.contadores.legalidad.propia;
-      c.legalidad.arrendada += e.contadores.legalidad.arrendada;
-      c.legalidad.comodato  += e.contadores.legalidad.comodato;
-    });
-  });
-
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set('cnt-rep-enplazo',       c.reporte.enPlazo);
-  set('cnt-rep-sinnovedad',    c.reporte.sinNovedad);
-  set('cnt-rep-objetado',      c.reporte.objetado);
-  set('cnt-rep-sinreportar',   c.reporte.sinReportar);
-  set('cnt-est-operativa',     c.estatus.operativa);
-  set('cnt-est-inoperativa',   c.estatus.inoperativa);
-  set('cnt-est-porcierre',     c.estatus.porCierreTecnico);
-  set('cnt-leg-propia',        c.legalidad.propia);
-  set('cnt-leg-arrendada',     c.legalidad.arrendada);
-  set('cnt-leg-comodato',      c.legalidad.comodato);
 }
