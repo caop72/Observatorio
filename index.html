@@ -109,28 +109,14 @@
         </div>
         <div class="col-md-4 mb-3">
           <label class="form-label">Estado</label>
-          <select id="reg-estado" class="form-select" onchange="cargarMunicipiosRegistro()">
+          <select id="reg-estado" class="form-select" onchange="cargarOptsRegistro()">
             <option value="">Seleccione...</option>
           </select>
         </div>
         <div class="col-md-4 mb-3" id="bloque-opt" style="display:none;">
-          <label class="form-label">Nombre de la OPT</label>
-          <input type="text" id="reg-opt-nombre" class="form-control" placeholder="Ej: Naguanagua Centro">
-        </div>
-      </div>
-
-      <!-- MUNICIPIO / PARROQUIA (solo para Jefe de OPT) -->
-      <div class="row" id="bloque-geo-opt" style="display:none;">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Municipio</label>
-          <select id="reg-municipio" class="form-select" onchange="cargarParroquiasRegistro()">
-            <option value="">Seleccione...</option>
-          </select>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Parroquia</label>
-          <select id="reg-parroquia" class="form-select">
-            <option value="">Seleccione...</option>
+          <label class="form-label">OPT *</label>
+          <select id="reg-opt" class="form-select">
+            <option value="">Seleccione la OPT...</option>
           </select>
         </div>
       </div>
