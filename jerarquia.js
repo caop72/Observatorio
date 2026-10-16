@@ -212,6 +212,7 @@ function renderListaOpts() {
 // FILAS
 // ============================================================
 function renderFilaRegion(region) {
+  const c = region.contadores || { estatus: { operativa: 0, inoperativa: 0, porCierreTecnico: 0 } };
   return `
     <div class="fila-ente d-flex align-items-center justify-content-between px-3 py-3 border-bottom"
          onclick="entrarRegion('${escapeAttr(region.nombre)}')" style="cursor:pointer;">
@@ -219,8 +220,8 @@ function renderFilaRegion(region) {
         <span class="nombre-ente">${escapeHtml(region.nombre)}</span>
         <span class="puntos-dotted"></span>
         ${renderIndicador(region.color)}
-        ${renderContadorInactivas(region.inactivas)}
-        ${renderContadorCierreTecnico(region.cierreTecnico)}
+        <span class="semaforo-punto contador-naranja" title="${c.estatus.inoperativa} inoperativas">${c.estatus.inoperativa}</span>
+        <span class="semaforo-punto contador-rojo" title="${c.estatus.porCierreTecnico} por cierre técnico">${c.estatus.porCierreTecnico}</span>
       </div>
       <span class="text-primary fs-5">›</span>
     </div>
