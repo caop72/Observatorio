@@ -182,6 +182,7 @@ function renderFilaRegion(region) {
         <span class="puntos-dotted"></span>
         ${renderIndicador(region.color)}
         ${renderContadorInactivas(region.inactivas)}
+        ${renderContadorCierreTecnico(region.cierreTecnico)}
       </div>
       <span class="text-primary fs-5">›</span>
     </div>
