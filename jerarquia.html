@@ -31,12 +31,27 @@
       <small class="text-white-50" id="infoCargo"></small>
     </div>
 
-    <div class="d-flex flex-wrap gap-2 small text-white-50 mb-3">
-      <span><span class="semaforo-punto verde"></span> Sin novedad</span>
-      <span><span class="semaforo-punto amarillo"></span> Por reparar</span>
-      <span><span class="semaforo-punto rojo"></span> Sin reportar</span>
-      <span><span class="semaforo-punto blanco"></span> En plazo</span>
-      <span><span class="semaforo-punto naranja-contador">0</span> Inactivas</span>
+    <div class="small text-white-50 mb-3">
+      <div class="mb-1">
+        <strong class="text-white">📊 Reporte:</strong>
+        <span class="me-2"><span class="semaforo-punto blanco"></span> En plazo</span>
+        <span class="me-2"><span class="semaforo-punto verde"></span> Sin novedad</span>
+        <span class="me-2"><span class="semaforo-punto amarillo"></span> Objetado</span>
+        <span class="me-2"><span class="semaforo-punto rojo"></span> Sin reportar (2+ días)</span>
+      </div>
+      <div class="mb-1">
+        <strong class="text-white">🏛️ Estatus:</strong>
+        <span class="me-2"><span class="semaforo-punto verde"></span> Operativa</span>
+        <span class="me-2"><span class="semaforo-punto naranja"></span> Inoperativa</span>
+        <span class="me-2"><span class="semaforo-punto rojo"></span> Cierre Técnico</span>
+        <span class="me-2 ms-4"><span class="semaforo-punto naranja-contador">0</span> Total inactivas del ente</span>
+      </div>
+      <div>
+        <strong class="text-white">📄 Legalidad:</strong>
+        <span class="me-2"><span class="semaforo-punto verde"></span> Propia</span>
+        <span class="me-2"><span class="semaforo-punto naranja"></span> Arrendada</span>
+        <span class="me-2"><span class="semaforo-punto amarillo"></span> Comodato</span>
+      </div>
     </div>
 
     <div class="align-items-center gap-2 mb-2" id="barraNavegacion" style="display:none;">
