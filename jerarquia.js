@@ -442,11 +442,19 @@ function renderHistorial(acciones) {
         <thead class="table-light">
           <tr>
             <th>Fecha</th><th>Hora</th><th>Reporte</th><th>Usuario</th>
-            <th>Rol</th><th>Acción</th><th>Comentario</th>
+            <th>Rol</th><th>Acción</th><th>Comentario</th><th>Documentos</th>
           </tr>
         </thead><tbody>
   `;
   acciones.forEach(a => {
+    const tieneReporte = a.idReporte && String(a.idReporte).trim() !== '';
+    const botones = tieneReporte
+      ? `<button class="btn btn-sm btn-outline-primary me-1" title="Ver reporte"
+                 onclick="verReporteDesdeHistorial('${escapeAttr(a.idReporte)}')">👁</button>
+         <button class="btn btn-sm btn-outline-danger" title="Descargar PDF"
+                 onclick="descargarPdfDesdeHistorial('${escapeAttr(a.idReporte)}')">📄</button>`
+      : '<span class="text-muted small">—</span>';
+
     html += `
       <tr>
         <td>${formatearFecha(a.fecha)}</td>
@@ -456,6 +464,7 @@ function renderHistorial(acciones) {
         <td><span class="badge bg-secondary">${escapeHtml(a.rol || '')}</span></td>
         <td>${escapeHtml(a.accion || '')}</td>
         <td>${escapeHtml(a.comentario || '')}</td>
+        <td class="text-nowrap">${botones}</td>
       </tr>`;
   });
   html += '</tbody></table></div>';
@@ -487,4 +496,124 @@ function escapeHtml(s) {
 
 function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/'/g, "\\'");
+}
+
+// ============================================================
+// VER REPORTE DESDE HISTORIAL
+// ============================================================
+async function verReporteDesdeHistorial(idReporte) {
+  const modal = new bootstrap.Modal(document.getElementById('modalHistorial'));
+  // Reutilizamos el modal de historial cambiando su contenido
+  document.getElementById('modalTitulo').textContent = 'Reporte — ' + idReporte;
+  document.getElementById('contenidoHistorial').innerHTML =
+    '<div class="text-center text-muted py-4">Cargando...</div>';
+
+  try {
+    const r = await apiGet({ accion: 'obtenerReporteCompleto', idReporte: idReporte });
+    if (!r.ok) {
+      document.getElementById('contenidoHistorial').innerHTML =
+        '<div class="alert alert-danger">' + (r.error || 'Error') + '</div>';
+      return;
+    }
+
+    const rep = r.reporte || {};
+    const opt = r.opt || {};
+    const v = r.valores || {};
+
+    let html = '';
+
+    // Datos de la OPT
+    html += '<h6 class="border-bottom pb-1">Datos de la OPT</h6>';
+    html += '<table class="table table-sm">';
+    html += `<tr><td><strong>ID</strong></td><td>${escapeHtml(opt.id || rep.idOpt)}</td></tr>`;
+    html += `<tr><td><strong>Nombre</strong></td><td>${escapeHtml(opt.nombre || '')}</td></tr>`;
+    html += `<tr><td><strong>Estado</strong></td><td>${escapeHtml(opt.estado || '')}</td></tr>`;
+    html += `<tr><td><strong>Estatus operativo</strong></td><td>${escapeHtml(opt.estatusOperativo || '')}</td></tr>`;
+    html += `<tr><td><strong>Abierta</strong></td><td>${escapeHtml(opt.abierta || '')}</td></tr>`;
+    html += `<tr><td><strong>Observaciones OPT</strong></td><td>${escapeHtml(opt.observaciones || '')}</td></tr>`;
+    html += '</table>';
+
+    // Reporte del día
+    html += '<h6 class="border-bottom pb-1 mt-3">Reporte del día</h6>';
+    html += '<table class="table table-sm">';
+    html += `<tr><td><strong>Fecha</strong></td><td>${rep.fecha} ${rep.hora}</td></tr>`;
+    html += `<tr><td><strong>Jefe de OPT</strong></td><td>${escapeHtml(r.nombreJefe || '')}</td></tr>`;
+    html += `<tr><td><strong>Estatus</strong></td><td>${escapeHtml(v.estatus || '')}</td></tr>`;
+    html += `<tr><td><strong>¿Abierta?</strong></td><td>${escapeHtml(v.abierta || '')}</td></tr>`;
+    html += `<tr><td><strong>Estatus legal</strong></td><td>${escapeHtml(v.estatus_legal || '')}</td></tr>`;
+    html += `<tr><td><strong>Observación</strong></td><td>${escapeHtml(v.observacion || '')}</td></tr>`;
+    if (v.causa) html += `<tr><td><strong>Causa</strong></td><td>${escapeHtml(v.causa)}</td></tr>`;
+    html += '</table>';
+
+    // Parte del personal
+    html += '<h6 class="border-bottom pb-1 mt-3">Parte del Personal</h6>';
+    html += '<table class="table table-sm table-bordered text-center">';
+    html += '<thead class="table-light"><tr><th>Tipo</th><th>Presentes</th><th>Reposo</th><th>Comisión</th><th>Permiso</th><th>Suspendido</th><th>Activos</th><th>Vacantes</th><th>Total</th></tr></thead><tbody>';
+    ['directivos','empleados','obreros','contratados'].forEach(t => {
+      const pres = parseInt(v['presentes_'+t],10)||0;
+      const rep_ = parseInt(v['reposo_'+t],10)||0;
+      const com  = parseInt(v['comision_'+t],10)||0;
+      const per  = parseInt(v['permiso_'+t],10)||0;
+      const sus  = parseInt(v['suspendido_'+t],10)||0;
+      const act  = pres + rep_ + com + per + sus;
+      const vac  = parseInt(v['vacantes_'+t],10)||0;
+      html += `<tr><td><strong>${t.charAt(0).toUpperCase()+t.slice(1)}</strong></td>
+               <td>${pres}</td><td>${rep_}</td><td>${com}</td><td>${per}</td><td>${sus}</td>
+               <td class="bg-light"><strong>${act}</strong></td>
+               <td>${vac}</td><td><strong>${act+vac}</strong></td></tr>`;
+    });
+    html += '</tbody></table>';
+
+    // Novedades
+    if (v.novedad_vehiculos || v.novedad_infraestructura || v.novedad_conectividad || v.observaciones) {
+      html += '<h6 class="border-bottom pb-1 mt-3">Novedades</h6>';
+      html += '<table class="table table-sm">';
+      if (v.novedad_vehiculos)       html += `<tr><td><strong>Vehículos</strong></td><td>${escapeHtml(v.novedad_vehiculos)}</td></tr>`;
+      if (v.novedad_infraestructura) html += `<tr><td><strong>Infraestructura</strong></td><td>${escapeHtml(v.novedad_infraestructura)}</td></tr>`;
+      if (v.novedad_conectividad)    html += `<tr><td><strong>Conectividad</strong></td><td>${escapeHtml(v.novedad_conectividad)}</td></tr>`;
+      if (v.observaciones)           html += `<tr><td><strong>Observaciones</strong></td><td>${escapeHtml(v.observaciones)}</td></tr>`;
+      html += '</table>';
+    }
+
+    // Validaciones
+    if (r.validaciones && r.validaciones.length > 0) {
+      html += '<h6 class="border-bottom pb-1 mt-3">Historial de validaciones</h6>';
+      html += '<ul class="list-group">';
+      r.validaciones.forEach(val => {
+        html += `<li class="list-group-item"><small><strong>${escapeHtml(val.nivel)}</strong> — ${escapeHtml(val.accion)} — ${escapeHtml(val.comentario || '(sin comentario)')}</small></li>`;
+      });
+      html += '</ul>';
+    }
+
+    // Botón descargar PDF al pie
+    html += `
+      <div class="mt-3 text-end">
+        <button class="btn btn-danger" onclick="descargarPdfDesdeHistorial('${escapeAttr(idReporte)}')">
+          📄 Descargar PDF
+        </button>
+      </div>
+    `;
+
+    document.getElementById('contenidoHistorial').innerHTML = html;
+    modal.show();
+  } catch (e) {
+    document.getElementById('contenidoHistorial').innerHTML =
+      '<div class="alert alert-danger">Error: ' + e.message + '</div>';
+  }
+}
+
+// ============================================================
+// DESCARGAR PDF DESDE HISTORIAL
+// ============================================================
+async function descargarPdfDesdeHistorial(idReporte) {
+  try {
+    const r = await apiGet({ accion: 'generarPdfReporte', token: TOKEN, idReporte: idReporte });
+    if (!r.ok) {
+      alert('Error: ' + (r.error || 'No se pudo generar el PDF'));
+      return;
+    }
+    window.open(r.pdfUrl, '_blank');
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
 }
