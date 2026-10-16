@@ -157,71 +157,102 @@ a { color: #1a3d7c; font-weight: 600; }
   background-color: #f8d7da;
   border-color: #f5c2c7;
 }
+
 /* ============================================
    FORZAR CONTRASTE EN FORMULARIO DE REPORTE
    ============================================ */
 
-/* Cada bloque de indicador: fondo blanco */
 #contenedor-indicadores > div {
   background: #ffffff !important;
   border: 1px solid #dee2e6 !important;
   color: #333 !important;
 }
 
-/* Labels dentro de los bloques de indicador */
 #contenedor-indicadores label {
   color: #1a3d7c !important;
   font-weight: 700 !important;
 }
 
-/* Labels sobre el fondo azul oscuro (solo en páginas específicas) */
 .fondo-oscuro label,
 .fondo-oscuro .form-label {
   color: #ffffff !important;
 }
 
-/* Labels dentro de cards siempre azules */
-.card label,
-.card .form-label {
-  color: #1a3d7c !important;
-}
-
-/* Título "Reporte del..." */
-.container h4,
-.container .mb-3 > h4 {
-  color: #ffffff !important;
-}
-
-/* Banner de precarga */
-#banner-precarga {
-  color: #664d03 !important;
-}
-
-/* Labels dentro de tarjetas Bootstrap blancas son azules */
 .card label,
 .card .form-label {
   color: #1a3d7c !important;
   font-weight: 600;
 }
 
-/* Excepción: la página de carga diaria sigue con labels azules sobre blanco */
-#contenedor-indicadores label {
-  color: #1a3d7c !important;
+.container h4,
+.container .mb-3 > h4 {
+  color: #ffffff !important;
 }
 
-/* Los labels sobre el fondo azul (Carga Diaria, commit, observaciones) siguen blancos */
+#banner-precarga {
+  color: #664d03 !important;
+}
+
 .container > .mb-3 > label:not(.card *),
 .container > .mb-3 > .form-label:not(.card *) {
   color: #ffffff !important;
 }
-/* Labels sobre fondo azul oscuro */
+
 .label-oscuro {
   color: #ffffff !important;
   font-weight: 700;
 }
+
 /* ============================================================
-   SEMÁFORO JERÁRQUICO (Fase J)
+   SEMÁFORO JERÁRQUICO (Fase J / J.5)
    ============================================================ */
+
+/* --- Punto base --- */
+.semaforo-punto {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  vertical-align: middle;
+}
+
+/* --- Colores por tipo --- */
+.semaforo-punto.verde    { background-color: #28a745; }
+.semaforo-punto.amarillo { background-color: #ffc107; }
+.semaforo-punto.rojo     { background-color: #dc3545; }
+.semaforo-punto.naranja  { background-color: #fd7e14; }
+.semaforo-punto.blanco   { background-color: #f8f9fa; border: 2px solid #6c757d; }
+
+/* --- Contadores con número dentro del círculo --- */
+.semaforo-punto.naranja-contador,
+.semaforo-punto.rojo-contador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  border: none;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.semaforo-punto.naranja-contador { background-color: #fd7e14; }
+.semaforo-punto.rojo-contador    { background-color: #dc3545; }
+
+/* --- Hover --- */
+.semaforo-punto:hover {
+  transform: scale(1.3);
+  transition: transform 0.15s ease;
+}
+
+/* --- Filas / Fase J.5 --- */
 .semaforo-fila {
   padding: 6px 4px;
   border-radius: 6px;
@@ -235,35 +266,10 @@ a { color: #1a3d7c; font-weight: 600; }
   padding-bottom: 4px;
 }
 
-.semaforo-punto {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  cursor: help;
-  border: 1px solid rgba(0,0,0,0.15);
-}
-
-.semaforo-punto.verde   { background-color: #28a745; }
-.semaforo-punto.naranja { background-color: #fd7e14; }
-.semaforo-punto.rojo    { background-color: #dc3545; }
 .semaforo-fila .fw-semibold {
   font-size: 0.95rem;
 }
 
-.semaforo-punto:hover {
-  transform: scale(1.3);
-  transition: transform 0.15s ease;
-}
-
-body {
-  background-color: #f8f9fa;
-}
-
-/* ============================================================
-   JERARQUÍA (Fase J.5 v3 - Navegación secuencial)
-   ============================================================ */
 .fila-ente {
   transition: background-color 0.15s ease;
   user-select: none;
@@ -289,33 +295,7 @@ body {
   transform: translateY(-4px);
 }
 
-.semaforo-punto {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-.semaforo-punto.verde   { background-color: #28a745; }
-.semaforo-punto.amarillo { background-color: #ffc107; }
-.semaforo-punto.rojo    { background-color: #dc3545; }
-.semaforo-punto.blanco { background-color: #f8f9fa; border: 2px solid #6c757d; }
-.semaforo-punto.naranja { background-color: #fd7e14; }
-
-.semaforo-punto.naranja-contador {
-  width: 22px;
-  height: 22px;
-  background-color: #fd7e14;
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 20px;
-  text-align: center;
-  border: none;
-}
-
+/* --- Breadcrumb / Card --- */
 .breadcrumb {
   background-color: transparent;
   padding: 0;
@@ -328,24 +308,8 @@ body {
 .card-header {
   font-size: 0.95rem;
 }
-.semaforo-punto.rojo-contador {
-  width: 22px;
-  height: 22px;
-  background-color: #dc3545;
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 20px;
-  text-align: center;
-  border: none;
-  border-radius: 50%;
-  display: inline-block;
+
+/* --- Fondo general de páginas internas --- */
+body {
+  background-color: #f8f9fa;
 }
-
-
-
-
-
-
-
-
