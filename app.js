@@ -217,41 +217,24 @@ function toggleBloqueOpt() {
   if (bloqueGeo) bloqueGeo.style.display = mostrar ? '' : 'none';
 }
 
-async function cargarMunicipiosRegistro() {
+async function cargarOptsRegistro() {
   const estado = document.getElementById('reg-estado').value;
-  const sel = document.getElementById('reg-municipio');
-  const selPar = document.getElementById('reg-parroquia');
+  const sel = document.getElementById('reg-opt');
   if (!sel) return;
-  sel.innerHTML = '<option value="">Seleccione...</option>';
-  if (selPar) selPar.innerHTML = '<option value="">Seleccione...</option>';
+  sel.innerHTML = '<option value="">Seleccione la OPT...</option>';
   if (!estado) return;
 
-  const r = await llamarAPI('obtenerMunicipios', { estado });
+  const r = await llamarAPI('obtenerOptsPorEstado', { estado });
   if (r.ok) {
-    r.municipios.forEach(m => {
+    r.opts.forEach(o => {
       const opt = document.createElement('option');
-      opt.value = m;
-      opt.textContent = m;
+      opt.value = o.id;
+      opt.textContent = o.nombre + ' (' + o.id + ')';
       sel.appendChild(opt);
     });
   }
 }
 
-async function cargarParroquiasRegistro() {
-  const estado = document.getElementById('reg-estado').value;
-  const municipio = document.getElementById('reg-municipio').value;
-  const sel = document.getElementById('reg-parroquia');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">Seleccione...</option>';
-  if (!estado || !municipio) return;
 
-  const r = await llamarAPI('obtenerParroquias', { estado, municipio });
-  if (r.ok) {
-    r.parroquias.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p;
-      opt.textContent = p;
-      sel.appendChild(opt);
-    });
-  }
-}
+
+
