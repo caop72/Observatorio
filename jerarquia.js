@@ -57,6 +57,7 @@ async function cargarArbol() {
     }
     ARBOL = data.arbol || [];
     NIVEL = 0;
+    actualizarTotalesNacionales();
     renderNivel();
   } catch (e) {
     document.getElementById('contenedorLista').innerHTML =
@@ -349,6 +350,18 @@ function escapeHtml(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function actualizarTotalesNacionales() {
+  let totalInactivas = 0;
+  let totalCierre = 0;
+  ARBOL.forEach(r => {
+    totalInactivas += (r.inactivas || 0);
+    totalCierre += (r.cierreTecnico || 0);
+  });
+  const el1 = document.getElementById('tot-inactivas');
+  const el2 = document.getElementById('tot-cierre-tecnico');
+  if (el1) el1.textContent = totalInactivas;
+  if (el2) el2.textContent = totalCierre;
 }
 function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/'/g, "\\'");
