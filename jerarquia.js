@@ -1,5 +1,5 @@
 /**************************************************************
- * OEP - Panel Jerárquico (v7)
+ * OEP - Panel Jerárquico (v8)
  * Columnas: Reporte | Estatus | Legalidad
  **************************************************************/
 
@@ -228,7 +228,7 @@ function renderFilaRegion(region) {
   };
   return `
       <div class="fila-ente d-flex align-items-center px-3 py-3 border-bottom"
-         onclick="abrirHistorialOpt('${escapeAttr(opt.id)}','${escapeAttr(opt.nombre)}')" style="cursor:pointer;">
+         onclick="entrarRegion('${escapeAttr(region.nombre)}')" style="cursor:pointer;">
       <div class="flex-grow-1">
         <span class="nombre-ente">${escapeHtml(region.nombre)}</span>
         <span class="text-primary fs-5 ms-2">›</span>
@@ -405,8 +405,6 @@ function actualizarContadoresLeyenda() {
 // ============================================================
 // HISTORIAL DE OPT
 // ============================================================
-let OPT_ACTUAL_ID = '';
-
 async function abrirHistorialOpt(idOpt, nombreOpt) {
   OPT_ACTUAL_ID = idOpt;
   const modal = new bootstrap.Modal(document.getElementById('modalHistorial'));
@@ -456,6 +454,7 @@ async function descargarFichaPdf() {
     ventana.document.body.innerHTML = '<div style="text-align:center;margin-top:50px;color:red;"><h3>Error de conexión</h3><p>' + e.message + '</p></div>';
   }
 }
+
 function renderHistorial(acciones) {
   const cont = document.getElementById('contenidoHistorial');
   if (!acciones.length) {
@@ -532,7 +531,6 @@ function escapeAttr(s) {
 // ============================================================
 async function verReporteDesdeHistorial(idReporte) {
   const modal = new bootstrap.Modal(document.getElementById('modalHistorial'));
-  // Reutilizamos el modal de historial cambiando su contenido
   document.getElementById('modalTitulo').textContent = 'Reporte — ' + idReporte;
   document.getElementById('contenidoHistorial').innerHTML =
     '<div class="text-center text-muted py-4">Cargando...</div>';
@@ -551,7 +549,6 @@ async function verReporteDesdeHistorial(idReporte) {
 
     let html = '';
 
-    // Datos de la OPT
     html += '<h6 class="border-bottom pb-1">Datos de la OPT</h6>';
     html += '<table class="table table-sm">';
     html += `<tr><td><strong>ID</strong></td><td>${escapeHtml(opt.id || rep.idOpt)}</td></tr>`;
@@ -562,7 +559,6 @@ async function verReporteDesdeHistorial(idReporte) {
     html += `<tr><td><strong>Observaciones OPT</strong></td><td>${escapeHtml(opt.observaciones || '')}</td></tr>`;
     html += '</table>';
 
-    // Reporte del día
     html += '<h6 class="border-bottom pb-1 mt-3">Reporte del día</h6>';
     html += '<table class="table table-sm">';
     html += `<tr><td><strong>Fecha</strong></td><td>${rep.fecha} ${rep.hora}</td></tr>`;
@@ -574,7 +570,6 @@ async function verReporteDesdeHistorial(idReporte) {
     if (v.causa) html += `<tr><td><strong>Causa</strong></td><td>${escapeHtml(v.causa)}</td></tr>`;
     html += '</table>';
 
-    // Parte del personal
     html += '<h6 class="border-bottom pb-1 mt-3">Parte del Personal</h6>';
     html += '<table class="table table-sm table-bordered text-center">';
     html += '<thead class="table-light"><tr><th>Tipo</th><th>Presentes</th><th>Reposo</th><th>Comisión</th><th>Permiso</th><th>Suspendido</th><th>Activos</th><th>Vacantes</th><th>Total</th></tr></thead><tbody>';
@@ -593,7 +588,6 @@ async function verReporteDesdeHistorial(idReporte) {
     });
     html += '</tbody></table>';
 
-    // Novedades
     if (v.novedad_vehiculos || v.novedad_infraestructura || v.novedad_conectividad || v.observaciones) {
       html += '<h6 class="border-bottom pb-1 mt-3">Novedades</h6>';
       html += '<table class="table table-sm">';
@@ -604,7 +598,6 @@ async function verReporteDesdeHistorial(idReporte) {
       html += '</table>';
     }
 
-    // Validaciones
     if (r.validaciones && r.validaciones.length > 0) {
       html += '<h6 class="border-bottom pb-1 mt-3">Historial de validaciones</h6>';
       html += '<ul class="list-group">';
@@ -614,7 +607,6 @@ async function verReporteDesdeHistorial(idReporte) {
       html += '</ul>';
     }
 
-    // Botón descargar PDF al pie
     html += `
       <div class="mt-3 text-end">
         <button class="btn btn-danger" onclick="descargarPdfDesdeHistorial('${escapeAttr(idReporte)}')">
@@ -646,14 +638,3 @@ async function descargarPdfDesdeHistorial(idReporte) {
     alert('Error: ' + e.message);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
