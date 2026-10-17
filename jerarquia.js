@@ -227,8 +227,8 @@ function renderFilaRegion(region) {
     legalidad: { propia: 0, arrendada: 0, comodato: 0 }
   };
   return `
-    <div class="fila-ente d-flex align-items-center px-3 py-3 border-bottom"
-         onclick="entrarRegion('${escapeAttr(region.nombre)}')" style="cursor:pointer;">
+      <div class="fila-ente d-flex align-items-center px-3 py-3 border-bottom"
+         onclick="abrirHistorialOpt('${escapeAttr(opt.id)}','${escapeAttr(opt.nombre)}')" style="cursor:pointer;">
       <div class="flex-grow-1">
         <span class="nombre-ente">${escapeHtml(region.nombre)}</span>
         <span class="text-primary fs-5 ms-2">›</span>
