@@ -11,6 +11,7 @@ let ARBOL = [];
 let NIVEL = 0;
 let REGION_SEL = null;
 let ESTADO_SEL = null;
+let OPT_ACTUAL_ID = '';
 
 // ============================================================
 // ARRANQUE
@@ -405,10 +406,15 @@ function actualizarContadoresLeyenda() {
 // HISTORIAL DE OPT
 // ============================================================
 async function abrirHistorialOpt(idOpt, nombreOpt) {
+  OPT_ACTUAL_ID = idOpt;
   const modal = new bootstrap.Modal(document.getElementById('modalHistorial'));
   document.getElementById('modalTitulo').textContent = 'Historial — ' + nombreOpt + ' (' + idOpt + ')';
   document.getElementById('contenidoHistorial').innerHTML =
     '<div class="text-center text-muted py-4">Cargando...</div>';
+    
+  // Mostrar el botón de Ficha
+  document.getElementById('btn-ver-ficha').style.display = '';
+
   modal.show();
 
   try {
@@ -460,7 +466,10 @@ function renderHistorial(acciones) {
         <td>${formatearFecha(a.fecha)}</td>
         <td>${formatearHora(a.hora)}</td>
         <td><code>${escapeHtml(a.idReporte || '')}</code></td>
-        <td>${escapeHtml(a.usuario || '')}</td>
+        <td>
+          ${a.fotoUsuario ? `<img src="${a.fotoUsuario}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:5px;" onerror="this.style.display='none'">` : ''}
+          ${escapeHtml(a.usuario || '')}
+        </td>
         <td><span class="badge bg-secondary">${escapeHtml(a.rol || '')}</span></td>
         <td>${escapeHtml(a.accion || '')}</td>
         <td>${escapeHtml(a.comentario || '')}</td>
@@ -617,3 +626,90 @@ async function descargarPdfDesdeHistorial(idReporte) {
     alert('Error: ' + e.message);
   }
 }
+
+async function abrirFichaOpt() {
+  if (!OPT_ACTUAL_ID) return;
+  
+  // Ocultar el modal de historial y abrir uno nuevo
+  bootstrap.Modal.getInstance(document.getElementById('modalHistorial')).hide();
+  
+  const modal = new bootstrap.Modal(document.getElementById('modalFichaOpt'));
+  document.getElementById('ficha-titulo').textContent = 'Ficha de la OPT';
+  document.getElementById('ficha-contenido').innerHTML = '<div class="text-center py-4">Cargando ficha...</div>';
+  modal.show();
+
+  const res = await apiGet({ accion: 'obtenerFichaOpt', token: TOKEN, idOpt: OPT_ACTUAL_ID });
+  if (!res.ok) {
+    document.getElementById('ficha-contenido').innerHTML = '<div class="alert alert-danger">' + res.error + '</div>';
+    return;
+  }
+
+  const opt = res.opt;
+  const jefe = res.jefe;
+  const gEst = res.gerenteEstado;
+  const gReg = res.gerenteRegion;
+  const pers = res.personal || [];
+
+  let html = `
+    <div class="row">
+      <div class="col-md-4 text-center mb-3">
+        ${opt.FOTO_FACHADA ? `<img src="${opt.FOTO_FACHADA}" class="img-fluid rounded mb-2" style="max-height:200px;object-fit:cover;">` : '<div class="alert alert-secondary">Sin foto de sede</div>'}
+        <h5 class="mb-1">${opt.NOMBRE_OPT}</h5>
+        <p class="text-muted mb-0">${opt.ID_OPT}</p>
+      </div>
+      <div class="col-md-8">
+        <h6 class="border-bottom pb-1">Estatus de la OPT</h6>
+        <table class="table table-sm">
+          <tr><td><strong>Estado</strong></td><td>${opt.ESTADO}</td></tr>
+          <tr><td><strong>Estatus Operativo</strong></td><td>${opt.ESTATUS_OPERATIVO}</td></tr>
+          <tr><td><strong>Condición Legal</strong></td><td>${opt.ESTATUS_LEGAL || 'No definida'}</td></tr>
+          <tr><td><strong>Abierta al público</strong></td><td>${opt.ABIERTA}</td></tr>
+          <tr><td><strong>Observaciones</strong></td><td>${opt.OBSERVACIONES || '-'}</td></tr>
+        </table>
+        <h6 class="border-bottom pb-1 mt-3">Ubicación GPS</h6>
+        <p class="mb-1">Lat: ${opt.LATITUD || '-'} | Lng: ${opt.LONGITUD || '-'}</p>
+      </div>
+    </div>
+
+    <h6 class="border-bottom pb-1 mt-3">Cadena de Mando</h6>
+    <div class="row mb-3">
+      <div class="col-md-4 text-center">
+        <small class="text-muted d-block">Jefe de OPT</small>
+        ${jefe ? (jefe.foto ? `<img src="${jefe.foto}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;" class="mb-1">` : '') : ''}
+        <strong>${jefe ? jefe.nombre : 'No asignado'}</strong>
+      </div>
+      <div class="col-md-4 text-center">
+        <small class="text-muted d-block">Gerente de Estado</small>
+        ${gEst ? (gEst.foto ? `<img src="${gEst.foto}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;" class="mb-1">` : '') : ''}
+        <strong>${gEst ? gEst.nombre : '-'}</strong>
+      </div>
+      <div class="col-md-4 text-center">
+        <small class="text-muted d-block">Gerente de Región</small>
+        ${gReg ? (gReg.foto ? `<img src="${gReg.foto}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;" class="mb-1">` : '') : ''}
+        <strong>${gReg ? gReg.nombre : '-'}</strong>
+      </div>
+    </div>
+
+    <h6 class="border-bottom pb-1 mt-3">Nómina de Personal (${pers.length} registros)</h6>
+    <div class="table-responsive" style="max-height:200px;overflow-y:auto;">
+      <table class="table table-sm table-striped">
+        <thead><tr><th>Cédula</th><th>Nombre</th><th>Cargo</th><th>Categoría</th></tr></thead>
+        <tbody>
+          ${pers.map(p => `<tr><td>${p.cedula}</td><td>${p.nombre}</td><td>${p.cargo}</td><td>${p.categoria}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById('ficha-contenido').innerHTML = html;
+}
+
+
+
+
+
+
+
+
+
+
