@@ -59,40 +59,41 @@ window.addEventListener('DOMContentLoaded', async () => {
 // ==========================================
 // FOTO USUARIO
 // ==========================================
+let base64FotoUsuario = null;
+
 document.getElementById('input-foto-usuario').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = function(evt) {
       document.getElementById('preview-foto-usuario').src = evt.target.result;
+      base64FotoUsuario = evt.target.result; // Guardamos el base64 globalmente
     };
     reader.readAsDataURL(file);
   }
 });
 
 async function guardarFotoUsuario() {
-  const input = document.getElementById('input-foto-usuario');
-  if (!input.files || !input.files[0]) { alert('Selecciona una foto primero'); return; }
+  if (!base64FotoUsuario) { alert('Por favor, selecciona un archivo de imagen primero.'); return; }
 
   const msg = document.getElementById('msg-foto-usuario');
-  msg.textContent = 'Subiendo...';
+  msg.textContent = 'Subiendo foto...';
   msg.style.color = 'blue';
 
-  const reader = new FileReader();
-  reader.onload = async function(evt) {
-    const res = await api('subirFotoUsuario', { token: TOKEN, imagenBase64: evt.target.result });
-    if (res.ok) {
-      msg.textContent = '✅ Foto actualizada';
-      msg.style.color = 'green';
-      // Actualizar localStorage si es necesario (opcional)
-    } else {
-      msg.textContent = '❌ Error: ' + res.error;
-      msg.style.color = 'red';
-    }
-  };
-  reader.readAsDataURL(input.files[0]);
-}
+  const res = await api('subirFotoUsuario', { 
+    token: TOKEN, 
+    imagenBase64: base64FotoUsuario 
+  });
 
+  if (res.ok) {
+    msg.textContent = '✅ Foto de carnet actualizada';
+    msg.style.color = 'green';
+    base64FotoUsuario = null; // Limpiamos para evitar subir la misma dos veces
+  } else {
+    msg.textContent = '❌ Error: ' + res.error;
+    msg.style.color = 'red';
+  }
+}
 // ==========================================
 // FOTO OPT
 // ==========================================
