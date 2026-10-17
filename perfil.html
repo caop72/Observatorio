@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OEP — Mi Perfil</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=100">
+  <style>
+    .foto-perfil-preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #1a3d7c; }
+    .foto-opt-preview { width: 100%; max-width: 300px; height: 180px; object-fit: cover; border-radius: 8px; border: 2px solid #ccc; }
+    #mapa-confirmacion { height: 200px; width: 100%; border-radius: 8px; border: 1px solid #ccc; margin-top: 10px; }
+  </style>
 </head>
 <body>
 
@@ -17,7 +22,6 @@
         <a href="estadisticas.html" class="btn btn-outline-light btn-sm">Estadísticas</a>
         <a href="historial.html" class="btn btn-outline-light btn-sm">Mis acciones</a>
         <a href="perfil.html" class="btn btn-outline-light btn-sm">Mi perfil</a>
-        <a href="filtros.html" id="nav-filtros" class="btn btn-outline-light btn-sm" style="display:none;">Filtros</a>
         <a href="jerarquia.html" id="nav-jerarquia" class="btn btn-outline-light btn-sm" style="display:none;">Jerarquía</a>
         <a href="calendario.html" id="nav-calendario" class="btn btn-outline-light btn-sm" style="display:none;">Calendario</a>
         <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar sesión</button>
@@ -25,36 +29,87 @@
     </div>
   </nav>
 
-  <div class="container my-4" style="max-width:600px;">
+  <div class="container my-4" style="max-width:800px;">
 
+    <!-- DATOS DE CUENTA -->
     <div class="card mb-3">
       <div class="card-body">
         <h5>Datos de la cuenta</h5>
         <p class="mb-1"><strong>Nombre:</strong> <span id="datos-nombre"></span></p>
         <p class="mb-1"><strong>Cargo:</strong> <span id="datos-cargo"></span></p>
-        <p class="mb-0"><strong>Estado / Región:</strong> <span id="datos-ubicacion"></span></p>
+        <p class="mb-0"><strong>Ubicación:</strong> <span id="datos-ubicacion"></span></p>
       </div>
     </div>
 
+    <!-- FOTO DE PERFIL -->
+    <div class="card mb-3">
+      <div class="card-body text-center">
+        <h5>Mi Foto (Carnet)</h5>
+        <div class="mb-3">
+          <img id="preview-foto-usuario" class="foto-perfil-preview mb-2" src="https://via.placeholder.com/120?text=Sin+Foto" alt="Foto de perfil">
+        </div>
+        <input type="file" id="input-foto-usuario" class="form-control form-control-sm mb-2" accept="image/*">
+        <button class="btn btn-primary btn-sm" onclick="guardarFotoUsuario()">Actualizar Foto</button>
+        <div id="msg-foto-usuario" class="small mt-2"></div>
+      </div>
+    </div>
+
+    <!-- FOTO DE LA SEDE (Solo Jefe de OPT / Gerente de Estado) -->
+    <div class="card mb-3" id="card-foto-sede" style="display:none;">
+      <div class="card-body text-center">
+        <h5>Foto de mi Sede (OPT)</h5>
+        <p class="small text-muted mb-2" id="nombre-opt-sede"></p>
+        <div class="mb-3">
+          <img id="preview-foto-opt" class="foto-opt-preview mb-2" src="https://via.placeholder.com/300x180?text=Sin+Foto" alt="Foto de sede">
+        </div>
+        <input type="file" id="input-foto-opt" class="form-control form-control-sm mb-2" accept="image/*">
+        <button class="btn btn-primary btn-sm" onclick="guardarFotoOpt()">Actualizar Foto de Sede</button>
+        <div id="msg-foto-opt" class="small mt-2"></div>
+      </div>
+    </div>
+
+    <!-- UBICACIÓN GPS (Solo Jefe de OPT / Gerente de Estado) -->
+    <div class="card mb-3" id="card-gps" style="display:none;">
+      <div class="card-body">
+        <h5>Ubicación Geográfica de la Sede</h5>
+        <p class="small text-muted">Presione el botón estando en la sede de la OPT para capturar las coordenadas.</p>
+        
+        <div class="row g-2 mb-2">
+          <div class="col-md-5">
+            <input type="text" id="input-lat" class="form-control form-control-sm" placeholder="Latitud" readonly>
+          </div>
+          <div class="col-md-5">
+            <input type="text" id="input-lng" class="form-control form-control-sm" placeholder="Longitud" readonly>
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-info btn-sm w-100" onclick="capturarGPS()">📍 Capturar</button>
+          </div>
+        </div>
+        
+        <div id="mapa-confirmacion" style="display:none;"></div>
+        <div class="mt-2 text-center">
+          <button class="btn btn-success btn-sm" onclick="guardarGPS()">Guardar Ubicación</button>
+        </div>
+        <div id="msg-gps" class="small mt-2"></div>
+      </div>
+    </div>
+
+    <!-- CAMBIAR CLAVE -->
     <div class="card">
       <div class="card-body">
         <h5 class="mb-3">Cambiar clave</h5>
-
         <div class="mb-3">
           <label class="form-label">Clave actual</label>
           <input type="password" id="clave-actual" class="form-control">
         </div>
-
         <div class="mb-3">
           <label class="form-label">Clave nueva (mínimo 6 caracteres)</label>
           <input type="password" id="clave-nueva" class="form-control">
         </div>
-
         <div class="mb-3">
           <label class="form-label">Confirmar clave nueva</label>
           <input type="password" id="clave-confirmar" class="form-control">
         </div>
-
         <button class="btn btn-primary w-100" onclick="cambiarClave()">Cambiar clave</button>
         <div id="msg" class="msg-error"></div>
       </div>
@@ -62,7 +117,7 @@
 
   </div>
 
-  <script src="perfil.js"></script>
+  <script src="perfil.js?v=11"></script>
   <script>
     (function(){
       try {
@@ -70,17 +125,10 @@
         if (!U) return;
         var rol = (U.rol || U.cargo || '').toString();
         var verJerarquia = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado','Jefe de OPT'];
-        var verFiltros = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado'];
-        if (verFiltros.indexOf(rol) !== -1) {
-          document.getElementById('nav-filtros').style.display = '';
-        }
         var verCalendario = ['Observatorio','CNC'];
-        if (verJerarquia.indexOf(rol) !== -1) {
-          document.getElementById('nav-jerarquia').style.display = '';
-        }
-        if (verCalendario.indexOf(rol) !== -1) {
-          document.getElementById('nav-calendario').style.display = '';
-        }
+        if (verJerarquia.indexOf(rol) !== -1) document.getElementById('nav-jerarquia').style.display = '';
+        if (verCalendario.indexOf(rol) !== -1) document.getElementById('nav-calendario').style.display = '';
+        document.getElementById('nav-usuario').textContent = (U.nombres || '') + ' — ' + rol;
       } catch(e) {}
     })();
   </script>
