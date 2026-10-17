@@ -97,42 +97,42 @@ async function guardarFotoUsuario() {
 // ==========================================
 // FOTO OPT
 // ==========================================
+let base64FotoOpt = null;
+
 document.getElementById('input-foto-opt').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = function(evt) {
       document.getElementById('preview-foto-opt').src = evt.target.result;
+      base64FotoOpt = evt.target.result; // Guardamos el base64 globalmente
     };
     reader.readAsDataURL(file);
   }
 });
 
 async function guardarFotoOpt() {
-  const input = document.getElementById('input-foto-opt');
-  if (!input.files || !input.files[0]) { alert('Selecciona una foto primero'); return; }
+  if (!base64FotoOpt) { alert('Por favor, selecciona una foto de la sede primero.'); return; }
   if (!OPT_DATA) { alert('No hay OPT asignada'); return; }
 
   const msg = document.getElementById('msg-foto-opt');
-  msg.textContent = 'Subiendo...';
+  msg.textContent = 'Subiendo foto de sede...';
   msg.style.color = 'blue';
 
-  const reader = new FileReader();
-  reader.onload = async function(evt) {
-    const res = await api('subirFotoOpt', { 
-      token: TOKEN, 
-      idOpt: OPT_DATA.idOpt, 
-      imagenBase64: evt.target.result 
-    });
-    if (res.ok) {
-      msg.textContent = '✅ Foto de sede actualizada';
-      msg.style.color = 'green';
-    } else {
-      msg.textContent = '❌ Error: ' + res.error;
-      msg.style.color = 'red';
-    }
-  };
-  reader.readAsDataURL(input.files[0]);
+  const res = await api('subirFotoOpt', { 
+    token: TOKEN, 
+    idOpt: OPT_DATA.idOpt, 
+    imagenBase64: base64FotoOpt 
+  });
+
+  if (res.ok) {
+    msg.textContent = '✅ Foto de sede actualizada';
+    msg.style.color = 'green';
+    base64FotoOpt = null; // Limpiamos
+  } else {
+    msg.textContent = '❌ Error: ' + res.error;
+    msg.style.color = 'red';
+  }
 }
 
 // ==========================================
