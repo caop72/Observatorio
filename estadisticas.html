@@ -82,103 +82,69 @@
       </div>
     </div>
     
+    <!-- ========================================== -->
+    <!-- DASHBOARD "MIS OPT" CON SELECTOR -->
+    <!-- ========================================== -->
     <h4 class="mt-5 mb-3 text-secondary border-bottom pb-2">Dashboard de Cobertura y Población (Mis OPT)</h4>
 
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="text-danger fw-bold">Población Afectada por Inoperatividad</h6>
-            <p class="text-muted small">Ciudadanos sin servicio postal por fallas técnicas o cierres.</p>
-            <canvas id="chart-poblacion-afectada" height="300"></canvas>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="fw-bold">Top 10 Estados por cantidad de OPT</h6>
-            <p class="text-muted small">Estados con mayor presencia de infraestructura postal.</p>
-            <canvas id="chart-top10" height="300"></canvas>
-          </div>
-        </div>
+    <!-- SELECTOR DE GRÁFICOS -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body bg-light">
+        <label for="selector-grafico" class="fw-bold mb-2">Seleccione el análisis que desea visualizar:</label>
+        <select id="selector-grafico" class="form-select form-select-lg" onchange="cambiarGrafico(this.value)">
+          <option value="poblacion_afectada">Población Afectada por Inoperatividad</option>
+          <option value="top10">Top 10 Estados por cantidad de OPT</option>
+          <option value="poblacion_total">Población Total Atendida por Estado</option>
+          <option value="activas">Activas vs Inactivas</option>
+          <option value="cobertura">Cobertura Parroquial</option>
+          <option value="operativas">Estatus de Operatividad de las OPT</option>
+        </select>
       </div>
     </div>
 
-    <!-- BLOQUE DE POBLACIÓN CON TABLA Y TEXTOS -->
-    <div class="row mb-4">
+    <!-- CONTENEDOR DINÁMICO (Aquí se pinta el gráfico seleccionado) -->
+    <div class="row mb-4" id="contenedor-grafico-dinamico">
       <div class="col-md-12">
         <div class="card shadow-sm h-100">
           <div class="card-body">
-            <h6 class="fw-bold text-primary">Población Atendida por Estado</h6>
-            <p class="text-muted small">Este gráfico muestra la cantidad de ciudadanos que habitan en las zonas donde opera cada Oficina Postal.</p>
+            <h6 class="fw-bold text-primary" id="din-titulo">Cargando gráfico...</h6>
+            <p class="text-muted small" id="din-subtitulo">...</p>
             
-            <div id="contenedor-poblacion">
-                <canvas id="chart-poblacion-total" height="250"></canvas>
+            <!-- El canvas donde se dibujará el gráfico -->
+            <div id="din-canvas-container">
+                <canvas id="chart-dinamico" height="200"></canvas>
             </div>
 
             <hr class="my-4">
             
-            <!-- LOS 3 RECUADROS DE LA IA -->
+            <!-- LOS 3 RECUADROS DEL ANÁLISIS -->
             <div class="row">
               <div class="col-md-4">
                 <div class="card bg-light border-success h-100">
                   <div class="card-body">
-                    <h6 class="fw-bold text-success">📋 RESUMEN EJECUTIVO</h6>
-                    <p class="small mb-0" id="txt-resumen">Cargando análisis de DeepSeek...</p>
+                    <h6 class="fw-bold text-success small">📋 RESUMEN EJECUTIVO</h6>
+                    <p class="small mb-0" id="din-resumen">Cargando análisis...</p>
                   </div>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="card bg-light border-danger h-100">
                   <div class="card-body">
-                    <h6 class="fw-bold text-danger">⚠️ ACCIONES SUGERIDAS</h6>
-                    <p class="small mb-0" id="txt-acciones">Cargando análisis de DeepSeek...</p>
+                    <h6 class="fw-bold text-danger small">⚠️ ACCIONES SUGERIDAS</h6>
+                    <p class="small mb-0" id="din-acciones">Cargando análisis...</p>
                   </div>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="card bg-light border-warning h-100">
                   <div class="card-body">
-                    <h6 class="fw-bold text-warning">💡 OBSERVACIONES</h6>
-                    <p class="small mb-0" id="txt-observaciones">Cargando análisis de DeepSeek...</p>
+                    <h6 class="fw-bold text-warning small">💡 OBSERVACIONES</h6>
+                    <p class="small mb-0" id="din-observaciones">Cargando análisis...</p>
                   </div>
                 </div>
               </div>
             </div>
 
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="fw-bold">Activas vs Inactivas</h6>
-            <canvas id="chart-activas" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="fw-bold">Cobertura Parroquial</h6>
-            <canvas id="chart-cobertura" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="row mb-5">
-      <div class="col-md-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h6 class="fw-bold">Estatus de Operatividad de las OPT</h6>
-            <canvas id="chart-operativas" height="80"></canvas>
           </div>
         </div>
       </div>
@@ -186,7 +152,7 @@
     
   </div>
 
-  <script src="estadisticas.js?v=12"></script>
+  <script src="estadisticas.js?v=13"></script>
   <script>
     (function(){
       try {
