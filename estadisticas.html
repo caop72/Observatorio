@@ -81,7 +81,80 @@
         </div>
       </div>
     </div>
+    <!-- ========================================== -->
+    <!-- DASHBOARD "MIS OPT" (6 GRÁFICOS DETALLADOS) -->
+    <!-- ========================================== -->
+    <h4 class="mt-5 mb-3 text-secondary border-bottom pb-2">Dashboard de Cobertura y Población (Mis OPT)</h4>
 
+    <div class="row mb-3">
+      <!-- 1. Población Afectada por Inoperatividad (Como tu Excel) -->
+      <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="text-danger fw-bold">Población Afectada por Inoperatividad</h6>
+            <p class="text-muted small">Ciudadanos sin servicio postal por fallas técnicas o cierres.</p>
+            <canvas id="chart-poblacion-afectada" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2. Top 10 Estados (OPT) -->
+      <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="fw-bold">Top 10 Estados por cantidad de OPT</h6>
+            <p class="text-muted small">Estados con mayor presencia de infraestructura postal.</p>
+            <canvas id="chart-top10" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <!-- 3. Población Atendida Total -->
+      <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="fw-bold">Población Total Atendida por Estado</h6>
+            <p class="text-muted small">Basado en el Censo 2011 cruzado con las OPT registradas.</p>
+            <canvas id="chart-poblacion-total" height="250"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Activas vs Inactivas -->
+      <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="fw-bold">Activas vs Inactivas</h6>
+            <canvas id="chart-activas" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Cobertura Parroquial -->
+      <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="fw-bold">Cobertura Parroquial</h6>
+            <canvas id="chart-cobertura" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mb-5">
+      <!-- 6. Operativas vs Inoperativas -->
+      <div class="col-md-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h6 class="fw-bold">Estatus de Operatividad de las OPT</h6>
+            <canvas id="chart-operativas" height="80"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
   </div>
 
   <script src="estadisticas.js?v=10"></script>
