@@ -95,9 +95,20 @@ async function cargarEstadisticas() {
     options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
   });
 }
+
 async function cargarMisOPT() {
   const r = await apiPost('obtenerDashboardMisOPT', { token: USUARIO.token });
   if (!r.ok) { console.error('Error:', r.error); return; }
+
+  // --- INYECTAR TEXTOS DE LA IA ---
+  if (r.textos) {
+    document.getElementById('txt-resumen').textContent = r.textos.resumen;
+    // Usamos innerText para que respete los saltos de línea (\n) de las acciones
+    document.getElementById('txt-acciones').innerText = r.textos.acciones; 
+    document.getElementById('txt-observaciones').textContent = r.textos.observaciones;
+  } else {
+    document.getElementById('txt-resumen').textContent = "El backend no envió los textos de IA.";
+  }
 
   // 1. Población Afectada (Barras horizontales - Alerta)
   new Chart(document.getElementById('chart-poblacion-afectada'), {
@@ -131,19 +142,44 @@ async function cargarMisOPT() {
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
   });
 
-  // 3. Población Total (Barras verticales)
+  // --- 3. Población Total (Barras Horizontales + Tabla HTML) ---
+  const estadosPob = r.poblacion_total.por_estado;
+  
+  // A) Dibujar el gráfico
   new Chart(document.getElementById('chart-poblacion-total'), {
     type: 'bar',
     data: {
-      labels: r.poblacion_total.por_estado.map(x => x.estado),
+      labels: estadosPob.map(x => x.estado),
       datasets: [{
-        label: 'Población atendida',
-        data: r.poblacion_total.por_estado.map(x => x.poblacion),
-        backgroundColor: '#0d6efd'
+        label: 'Población',
+        data: estadosPob.map(x => x.poblacion),
+        backgroundColor: '#3b82f6', // Azul
+        borderRadius: 4
       }]
     },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    options: { 
+      indexAxis: 'y', 
+      plugins: { legend: { display: false } }, 
+      scales: { x: { beginAtZero: true } } 
+    }
   });
+
+  // B) Construir la tabla HTML
+  let htmlTabla = '<table class="table table-sm table-hover mt-3" style="font-size: 0.85rem;">';
+  htmlTabla += '<thead class="table-light"><tr><th>Estado</th><th class="text-end">Población Atendida</th></tr></thead><tbody>';
+  estadosPob.forEach(row => {
+    const numFormateado = row.poblacion.toLocaleString('es-VE');
+    htmlTabla += `<tr><td>${row.estado}</td><td class="text-end">${numFormateado}</td></tr>`;
+  });
+  htmlTabla += '</tbody></table>';
+  
+  // C) Inyectar la tabla debajo del gráfico en el contenedor
+  const contenedorPob = document.getElementById('contenedor-poblacion');
+  // Limpiamos si ya existía una tabla de una carga anterior
+  const tablaAnterior = contenedorPob.querySelector('table');
+  if (tablaAnterior) tablaAnterior.remove();
+  // Agregamos la nueva tabla
+  contenedorPob.insertAdjacentHTML('beforeend', htmlTabla);
 
   // 4. Activas vs Inactivas
   new Chart(document.getElementById('chart-activas'), {
@@ -186,6 +222,7 @@ async function cargarMisOPT() {
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
   });
 }
+
 function cerrarSesion() {
   localStorage.removeItem('oep_usuario');
   location.href = 'index.html';
