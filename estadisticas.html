@@ -37,8 +37,9 @@
     <div class="card shadow-sm mb-4">
       <div class="card-body bg-light border-bottom">
         <label for="selector-grafico" class="fw-bold mb-2">Seleccione el análisis que desea visualizar:</label>
-        <!-- Opciones ordenadas alfabéticamente -->
+        <!-- Opciones ordenadas alfabéticamente e incluyendo el Informe Global -->
         <select id="selector-grafico" class="form-select form-select-lg fw-bold" onchange="cambiarGrafico(this.value)">
+          <option value="informe_global">0. INFORME GERENCIAL GLOBAL (PDF)</option>
           <option value="activas">1. Activas vs Inactivas</option>
           <option value="cobertura">2. Cobertura Parroquial</option>
           <option value="estatus">3. Estatus Legal</option>
@@ -52,53 +53,33 @@
       </div>
     </div>
 
-        <!-- ========================================== -->
-    <!-- INFORME GLOBAL DEL OBSERVATORIO -->
-    <!-- ========================================== -->
-    <div class="card shadow-sm mb-4 border-primary">
-      <div class="card-header bg-primary text-white fw-bold">
-        🌐 INFORME GERENCIAL GLOBAL (Todas las Perspectivas)
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-4 mb-3 mb-md-0">
-            <div class="card bg-light border-success h-100">
-              <div class="card-body">
-                <h6 class="fw-bold text-success small">📋 RESUMEN EJECUTIVO</h6>
-                <p class="small mb-0" id="global-resumen">Generando informe global...</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4 mb-3 mb-md-0">
-            <div class="card bg-light border-danger h-100">
-              <div class="card-body">
-                <h6 class="fw-bold text-danger small">⚠️ ACCIONES SUGERIDAS</h6>
-                <p class="small mb-0" id="global-acciones">Generando acciones...</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card bg-light border-warning h-100">
-              <div class="card-body">
-                <h6 class="fw-bold text-warning small">💡 OBSERVACIONES</h6>
-                <p class="small mb-0" id="global-observaciones">Generando observaciones...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- CONTENEDOR DINÁMICO -->
     <div class="row mb-4" id="contenedor-grafico-dinamico">
       <div class="col-md-12">
         <div class="card shadow-sm h-100">
           <div class="card-body">
-            <h5 class="fw-bold text-primary" id="din-titulo">Cargando gráfico...</h5>
-            <p class="text-muted small" id="din-subtitulo">...</p>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5 class="fw-bold text-primary mb-0" id="din-titulo">Cargando...</h5>
+                <p class="text-muted small mb-0" id="din-subtitulo">...</p>
+              </div>
+              <!-- BOTÓN DE PDF (Oculto por defecto) -->
+              <button id="btn-pdf" class="btn btn-danger fw-bold" style="display:none;" onclick="descargarPdfInforme()">
+                📄 Descargar Informe PDF
+              </button>
+            </div>
             
+            <!-- Contenedor para el gráfico (se oculta en el informe global) -->
             <div id="din-canvas-container">
                 <canvas id="chart-dinamico" height="150"></canvas>
+            </div>
+
+            <!-- Panel Especial para el Informe Global (se oculta en los gráficos) -->
+            <div id="din-panel-global" style="display:none;">
+                <div class="alert alert-info border-primary">
+                    <h6 class="fw-bold mb-1">🌐 Análisis Integral del Observatorio</h6>
+                    <p class="small mb-0">Este panel consolida la infraestructura, la población y la operatividad en un solo informe gerencial. Ideal para presentaciones de alto nivel.</p>
+                </div>
             </div>
 
             <hr class="my-4">
@@ -109,7 +90,7 @@
                 <div class="card bg-light border-success h-100">
                   <div class="card-body">
                     <h6 class="fw-bold text-success small">📋 RESUMEN EJECUTIVO</h6>
-                    <p class="small mb-0" id="din-resumen">Cargando...</p>
+                    <p class="small mb-0" id="din-resumen">Generando...</p>
                   </div>
                 </div>
               </div>
@@ -117,7 +98,7 @@
                 <div class="card bg-light border-danger h-100">
                   <div class="card-body">
                     <h6 class="fw-bold text-danger small">⚠️ ACCIONES SUGERIDAS</h6>
-                    <p class="small mb-0" id="din-acciones">Cargando...</p>
+                    <p class="small mb-0" id="din-acciones">Generando...</p>
                   </div>
                 </div>
               </div>
@@ -125,7 +106,7 @@
                 <div class="card bg-light border-warning h-100">
                   <div class="card-body">
                     <h6 class="fw-bold text-warning small">💡 OBSERVACIONES</h6>
-                    <p class="small mb-0" id="din-observaciones">Cargando...</p>
+                    <p class="small mb-0" id="din-observaciones">Generando...</p>
                   </div>
                 </div>
               </div>
@@ -138,7 +119,7 @@
     
   </div>
 
-  <script src="estadisticas.js?v=16"></script>
+  <script src="estadisticas.js?v=20"></script>
   <script>
     (function(){
       try {
