@@ -26,93 +26,42 @@
 
   <div class="container my-4" style="max-width:1200px;">
 
-    <div class="card mb-3 shadow-sm">
-      <div class="card-body text-center">
-        <h6 class="text-muted mb-1">Total OPTs</h6>
-        <h2 class="mb-0" id="kpi-total">0</h2>
+    <div class="card mb-4 shadow-sm border-primary">
+      <div class="card-body text-center bg-light">
+        <h6 class="text-muted mb-1">Total OPTs Registradas</h6>
+        <h2 class="mb-0 text-primary" id="kpi-total">0</h2>
       </div>
     </div>
 
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h6>Reporte</h6>
-            <canvas id="chart-reporte" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h6>Estatus</h6>
-            <canvas id="chart-estatus" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h6>Legalidad</h6>
-            <canvas id="chart-legalidad" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h6>OPTs por Región</h6>
-            <canvas id="chart-region" height="80"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h6>Reportes por día (últimos 30 días)</h6>
-            <canvas id="chart-dias" height="80"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- ========================================== -->
-    <!-- DASHBOARD "MIS OPT" CON SELECTOR -->
-    <!-- ========================================== -->
-    <h4 class="mt-5 mb-3 text-secondary border-bottom pb-2">Dashboard de Cobertura y Población (Mis OPT)</h4>
-
-    <!-- SELECTOR DE GRÁFICOS -->
+    <!-- DASHBOARD CON SELECTOR -->
     <div class="card shadow-sm mb-4">
-      <div class="card-body bg-light">
+      <div class="card-body bg-light border-bottom">
         <label for="selector-grafico" class="fw-bold mb-2">Seleccione el análisis que desea visualizar:</label>
-        <select id="selector-grafico" class="form-select form-select-lg" onchange="cambiarGrafico(this.value)">
-          <option value="poblacion_afectada">Población Afectada por Inoperatividad</option>
-          <option value="top10">Top 10 Estados por cantidad de OPT</option>
-          <option value="poblacion_total">Población Total Atendida por Estado</option>
-          <option value="activas">Activas vs Inactivas</option>
-          <option value="cobertura">Cobertura Parroquial</option>
-          <option value="operativas">Estatus de Operatividad de las OPT</option>
+        <!-- Opciones ordenadas alfabéticamente -->
+        <select id="selector-grafico" class="form-select form-select-lg fw-bold" onchange="cambiarGrafico(this.value)">
+          <option value="activas">1. Activas vs Inactivas</option>
+          <option value="cobertura">2. Cobertura Parroquial</option>
+          <option value="estatus">3. Estatus Legal</option>
+          <option value="operativas">4. Estatus de Operatividad (Técnico)</option>
+          <option value="region">5. OPTs por Región</option>
+          <option value="poblacion_afectada">6. Población Afectada por Inoperatividad</option>
+          <option value="poblacion_total">7. Población Total Atendida</option>
+          <option value="reporte">8. Reportes por Semáforo</option>
+          <option value="top10">9. Top 10 Estados</option>
         </select>
       </div>
     </div>
 
-    <!-- CONTENEDOR DINÁMICO (Aquí se pinta el gráfico seleccionado) -->
+    <!-- CONTENEDOR DINÁMICO -->
     <div class="row mb-4" id="contenedor-grafico-dinamico">
       <div class="col-md-12">
         <div class="card shadow-sm h-100">
           <div class="card-body">
-            <h6 class="fw-bold text-primary" id="din-titulo">Cargando gráfico...</h6>
+            <h5 class="fw-bold text-primary" id="din-titulo">Cargando gráfico...</h5>
             <p class="text-muted small" id="din-subtitulo">...</p>
             
-            <!-- El canvas donde se dibujará el gráfico -->
             <div id="din-canvas-container">
-                <canvas id="chart-dinamico" height="200"></canvas>
+                <canvas id="chart-dinamico" height="150"></canvas>
             </div>
 
             <hr class="my-4">
@@ -123,7 +72,7 @@
                 <div class="card bg-light border-success h-100">
                   <div class="card-body">
                     <h6 class="fw-bold text-success small">📋 RESUMEN EJECUTIVO</h6>
-                    <p class="small mb-0" id="din-resumen">Cargando análisis...</p>
+                    <p class="small mb-0" id="din-resumen">Cargando...</p>
                   </div>
                 </div>
               </div>
@@ -131,7 +80,7 @@
                 <div class="card bg-light border-danger h-100">
                   <div class="card-body">
                     <h6 class="fw-bold text-danger small">⚠️ ACCIONES SUGERIDAS</h6>
-                    <p class="small mb-0" id="din-acciones">Cargando análisis...</p>
+                    <p class="small mb-0" id="din-acciones">Cargando...</p>
                   </div>
                 </div>
               </div>
@@ -139,7 +88,7 @@
                 <div class="card bg-light border-warning h-100">
                   <div class="card-body">
                     <h6 class="fw-bold text-warning small">💡 OBSERVACIONES</h6>
-                    <p class="small mb-0" id="din-observaciones">Cargando análisis...</p>
+                    <p class="small mb-0" id="din-observaciones">Cargando...</p>
                   </div>
                 </div>
               </div>
@@ -152,7 +101,7 @@
     
   </div>
 
-  <script src="estadisticas.js?v=15"></script>
+  <script src="estadisticas.js?v=16"></script>
   <script>
     (function(){
       try {
