@@ -81,13 +81,14 @@
         </div>
       </div>
     </div>
+    
     <!-- ========================================== -->
     <!-- DASHBOARD "MIS OPT" (6 GRÁFICOS DETALLADOS) -->
     <!-- ========================================== -->
     <h4 class="mt-5 mb-3 text-secondary border-bottom pb-2">Dashboard de Cobertura y Población (Mis OPT)</h4>
 
     <div class="row mb-3">
-      <!-- 1. Población Afectada por Inoperatividad (Como tu Excel) -->
+      <!-- 1. Población Afectada por Inoperatividad -->
       <div class="col-md-6">
         <div class="card shadow-sm h-100">
           <div class="card-body">
@@ -110,20 +111,48 @@
       </div>
     </div>
 
-    <div class="row mb-3">
-      <!-- 3. Población Atendida Total -->
-      <div class="col-md-6">
+    <!-- Bloque de Población Total con IA -->
+    <div class="row mb-4">
+      <!-- 3. Población Atendida Total (Gráfico y Tabla) -->
+      <div class="col-md-7">
         <div class="card shadow-sm h-100">
           <div class="card-body">
-            <h6 class="fw-bold">Población Total Atendida por Estado</h6>
-            <p class="text-muted small">Basado en el Censo 2011 cruzado con las OPT registradas.</p>
-            <canvas id="chart-poblacion-total" height="250"></canvas>
+            <h6 class="fw-bold text-primary">Población Atendida por Estado</h6>
+            <p class="text-muted small">Este gráfico muestra la cantidad de ciudadanos que habitan en las zonas donde opera cada Oficina Postal.</p>
+            <!-- Contenedor para inyectar el gráfico y la tabla -->
+            <div id="contenedor-poblacion">
+                <canvas id="chart-poblacion-total" height="300"></canvas>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Cuadros de Texto de la IA -->
+      <div class="col-md-5">
+        <div class="card shadow-sm mb-3 bg-light border-success">
+          <div class="card-body">
+            <h6 class="fw-bold text-success">📋 RESUMEN EJECUTIVO</h6>
+            <p class="small mb-0" id="txt-resumen">Analizando datos...</p>
+          </div>
+        </div>
+        <div class="card shadow-sm mb-3 bg-light border-danger">
+          <div class="card-body">
+            <h6 class="fw-bold text-danger">⚠️ ACCIONES SUGERIDAS</h6>
+            <p class="small mb-0" id="txt-acciones">Analizando datos...</p>
+          </div>
+        </div>
+        <div class="card shadow-sm bg-light border-warning">
+          <div class="card-body">
+            <h6 class="fw-bold text-warning">💡 OBSERVACIONES</h6>
+            <p class="small mb-0" id="txt-observaciones">Analizando datos...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
       <!-- 4. Activas vs Inactivas -->
-      <div class="col-md-3">
+      <div class="col-md-6">
         <div class="card shadow-sm h-100">
           <div class="card-body">
             <h6 class="fw-bold">Activas vs Inactivas</h6>
@@ -133,7 +162,7 @@
       </div>
 
       <!-- 5. Cobertura Parroquial -->
-      <div class="col-md-3">
+      <div class="col-md-6">
         <div class="card shadow-sm h-100">
           <div class="card-body">
             <h6 class="fw-bold">Cobertura Parroquial</h6>
@@ -157,7 +186,7 @@
     
   </div>
 
-  <script src="estadisticas.js?v=10"></script>
+  <script src="estadisticas.js?v=11"></script>
   <script>
     (function(){
       try {
