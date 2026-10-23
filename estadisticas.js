@@ -152,10 +152,27 @@ async function cambiarGrafico(tipo) {
 }
 
 // Función vacía por ahora para el botón PDF
-function descargarPdfInforme() {
-  alert("El generador de PDF se conectará aquí (en el próximo paso).");
-}
+async function descargarPdfInforme() {
+  const btn = document.getElementById('btn-pdf');
+  const textoOriginal = btn.innerHTML;
+  
+  // Feedback visual mientras se genera
+  btn.innerHTML = '⏳ Generando PDF...';
+  btn.disabled = true;
 
+  const r = await apiPost('generarPdfInformeGlobal', { token: USUARIO.token });
+  
+  btn.innerHTML = textoOriginal;
+  btn.disabled = false;
+
+  if (r.ok && r.pdfUrl) {
+    // Abrir el PDF en una nueva pestaña para descargar/imprimir
+    window.open(r.pdfUrl, '_blank');
+    alert('¡Informe PDF generado con éxito!\nSe ha abierto en una nueva pestaña y se guardó en tu Google Drive.');
+  } else {
+    alert('Error al generar el PDF: ' + (r.error || 'Desconocido'));
+  }
+}
 function cerrarSesion() {
   localStorage.removeItem('oep_usuario');
   location.href = 'index.html';
