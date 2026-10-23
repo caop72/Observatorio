@@ -1,7 +1,8 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
+
 let USUARIO = null;
-let DATOS_MIS_OPT = null; // Guardaremos la data aquí
-let chartDinamico = null; // Instancia del gráfico actual
+let DATOS_MIS_OPT = null;
+let chartDinamico = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   USUARIO = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
