@@ -95,7 +95,97 @@ async function cargarEstadisticas() {
     options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
   });
 }
+async function cargarMisOPT() {
+  const r = await apiPost('obtenerDashboardMisOPT', { token: USUARIO.token });
+  if (!r.ok) { console.error('Error:', r.error); return; }
 
+  // 1. Población Afectada (Barras horizontales - Alerta)
+  new Chart(document.getElementById('chart-poblacion-afectada'), {
+    type: 'bar',
+    data: {
+      labels: r.poblacion_afectada.por_estado.map(x => x.estado),
+      datasets: [{
+        label: 'Población afectada',
+        data: r.poblacion_afectada.por_estado.map(x => x.poblacion),
+        backgroundColor: '#dc3545' // Rojo alerta
+      }]
+    },
+    options: { 
+      indexAxis: 'y', 
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true } }
+    }
+  });
+
+  // 2. Top 10 (Barras verticales)
+  new Chart(document.getElementById('chart-top10'), {
+    type: 'bar',
+    data: {
+      labels: r.top_10_estados_por_opt.map(x => x.estado),
+      datasets: [{
+        label: 'Cantidad de OPT',
+        data: r.top_10_estados_por_opt.map(x => x.cantidad),
+        backgroundColor: '#6f42c1'
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+
+  // 3. Población Total (Barras verticales)
+  new Chart(document.getElementById('chart-poblacion-total'), {
+    type: 'bar',
+    data: {
+      labels: r.poblacion_total.por_estado.map(x => x.estado),
+      datasets: [{
+        label: 'Población atendida',
+        data: r.poblacion_total.por_estado.map(x => x.poblacion),
+        backgroundColor: '#0d6efd'
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+
+  // 4. Activas vs Inactivas
+  new Chart(document.getElementById('chart-activas'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Activas', 'Inactivas'],
+      datasets: [{
+        data: [r.activas_inactivas.activas, r.activas_inactivas.inactivas],
+        backgroundColor: ['#198754', '#6c757d']
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+  });
+
+  // 5. Cobertura
+  new Chart(document.getElementById('chart-cobertura'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Con OPT', 'Sin OPT'],
+      datasets: [{
+        data: [r.cobertura_poblacional.parroquias_con_opt, r.cobertura_poblacional.parroquias_sin_opt],
+        backgroundColor: ['#0dcaf0', '#e9ecef']
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+  });
+
+  // 6. Operativas vs Inoperativas (Barras horizontales)
+  const estatusLabels = Object.keys(r.estatus);
+  new Chart(document.getElementById('chart-operativas'), {
+    type: 'bar',
+    data: {
+      labels: estatusLabels,
+      datasets: [{
+        label: 'Cantidad de OPT',
+        data: estatusLabels.map(k => r.estatus[k]),
+        backgroundColor: ['#198754', '#dc3545', '#ffc107', '#6c757d']
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
 function cerrarSesion() {
   localStorage.removeItem('oep_usuario');
   location.href = 'index.html';
