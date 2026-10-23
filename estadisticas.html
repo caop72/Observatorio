@@ -113,16 +113,48 @@
 
     <!-- Bloque de Población Total con IA -->
     <div class="row mb-4">
-      <!-- 3. Población Atendida Total (Gráfico y Tabla) -->
-      <div class="col-md-7">
-        <div class="card shadow-sm h-100">
+      <!-- 3. Población Atendida Total -->
+      <div class="col-md-12">
+        <div class="card shadow-sm h-100 mb-4">
           <div class="card-body">
             <h6 class="fw-bold text-primary">Población Atendida por Estado</h6>
             <p class="text-muted small">Este gráfico muestra la cantidad de ciudadanos que habitan en las zonas donde opera cada Oficina Postal.</p>
-            <!-- Contenedor para inyectar el gráfico y la tabla -->
+            
+            <!-- El gráfico y su tabla -->
             <div id="contenedor-poblacion">
-                <canvas id="chart-poblacion-total" height="300"></canvas>
+                <canvas id="chart-poblacion-total" height="250"></canvas>
             </div>
+
+            <hr class="my-4">
+            
+            <!-- LOS 3 RECUADROS DE TEXTO JUSTO DEBAJO -->
+            <div class="row">
+              <div class="col-md-4">
+                <div class="card bg-light border-success h-100">
+                  <div class="card-body">
+                    <h6 class="fw-bold text-success">📋 RESUMEN EJECUTIVO</h6>
+                    <p class="small mb-0" id="txt-resumen">Cargando análisis de DeepSeek...</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card bg-light border-danger h-100">
+                  <div class="card-body">
+                    <h6 class="fw-bold text-danger">⚠️ ACCIONES SUGERIDAS</h6>
+                    <p class="small mb-0" id="txt-acciones">Cargando análisis de DeepSeek...</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card bg-light border-warning h-100">
+                  <div class="card-body">
+                    <h6 class="fw-bold text-warning">💡 OBSERVACIONES</h6>
+                    <p class="small mb-0" id="txt-observaciones">Cargando análisis de DeepSeek...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
