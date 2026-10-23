@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!USUARIO || !USUARIO.token) { location.href = 'index.html'; return; }
   document.getElementById('nav-usuario').textContent = (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
 
-  // Cargamos las dos bases de datos en paralelo
   const [r1, r2] = await Promise.all([
     apiPost('obtenerEstadisticasV2', { token: USUARIO.token }),
     apiPost('obtenerDashboardMisOPT', { token: USUARIO.token })
@@ -21,8 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (DATOS_ESTADISTICAS && DATOS_MIS_OPT) {
     document.getElementById('kpi-total').textContent = DATOS_ESTADISTICAS.totalOpts;
-    cambiarGrafico('activas'); // Cargamos el primero alfabéticamente por defecto
-    cargarInformeGlobal(); // <-- NUEVA LÍNEA
+    cambiarGrafico('informe_global'); // Cargamos el informe global por defecto
   } else {
     alert("Error cargando los datos. Revisa la consola.");
   }
@@ -44,13 +42,46 @@ async function cambiarGrafico(tipo) {
   const tablaAnterior = document.querySelector('#din-canvas-container table');
   if (tablaAnterior) tablaAnterior.remove();
 
+  // Referencias al DOM
+  const canvasContainer = document.getElementById('din-canvas-container');
+  const panelGlobal = document.getElementById('din-panel-global');
+  const btnPdf = document.getElementById('btn-pdf');
+
+  // Lógica especial para el Informe Global
+  if (tipo === 'informe_global') {
+    canvasContainer.style.display = 'none';
+    panelGlobal.style.display = 'block';
+    btnPdf.style.display = 'block'; // Mostrar botón PDF
+    
+    document.getElementById('din-titulo').textContent = "Informe Gerencial Global del Observatorio";
+    document.getElementById('din-subtitulo').textContent = "Consolidado de infraestructura, población y operatividad nacional.";
+
+    document.getElementById('din-resumen').textContent = "Analizando datos globales...";
+    document.getElementById('din-acciones').textContent = "Generando recomendaciones...";
+    document.getElementById('din-observaciones').textContent = "Evaluando tendencias...";
+
+    // Llamamos a la función del backend que crea el informe global
+    const rTex = await apiPost('obtenerResumenGlobal', { token: USUARIO.token });
+    if (rTex.ok && rTex.textos) {
+      document.getElementById('din-resumen').textContent = rTex.textos.resumen;
+      document.getElementById('din-acciones').innerText = rTex.textos.acciones;
+      document.getElementById('din-observaciones').textContent = rTex.textos.observaciones;
+    }
+    return; // Terminamos aquí para no dibujar el gráfico
+  }
+
+  // Para el resto de gráficos normales
+  canvasContainer.style.display = 'block';
+  panelGlobal.style.display = 'none';
+  btnPdf.style.display = 'none'; // Ocultar botón PDF
+
   const ctx = document.getElementById('chart-dinamico').getContext('2d');
   const d = DATOS_MIS_OPT;
   const e = DATOS_ESTADISTICAS;
   
   let titulo = "", subtitulo = "";
 
-  // Gráficos Originales (Estadísticas V2)
+  // ... (Aquí va toda la lógica de los if/else de los gráficos que ya tenías) ...
   if (tipo === 'activas') {
     titulo = "Activas vs Inactivas (Administrativo)";
     subtitulo = "Estado administrativo de las oficinas postales registradas.";
@@ -119,14 +150,12 @@ async function cambiarGrafico(tipo) {
     document.getElementById('din-observaciones').textContent = rTex.textos.observaciones;
   }
 }
-async function cargarInformeGlobal() {
-  const rTex = await apiPost('obtenerResumenGlobal', { token: USUARIO.token });
-  if (rTex.ok && rTex.textos) {
-    document.getElementById('global-resumen').textContent = rTex.textos.resumen;
-    document.getElementById('global-acciones').innerText = rTex.textos.acciones;
-    document.getElementById('global-observaciones').textContent = rTex.textos.observaciones;
-  }
+
+// Función vacía por ahora para el botón PDF
+function descargarPdfInforme() {
+  alert("El generador de PDF se conectará aquí (en el próximo paso).");
 }
+
 function cerrarSesion() {
   localStorage.removeItem('oep_usuario');
   location.href = 'index.html';
