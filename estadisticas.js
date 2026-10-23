@@ -116,12 +116,13 @@ async function cargarMisOPT() {
 }
 
 async function cargarAnalisisIA() {
-  const r = await apiPost('obtenerAnalisisIA', { token: USUARIO.token });
-  if (!r.ok || !r.textos) return;
-
-  document.getElementById('txt-resumen').textContent = r.textos.resumen;
-  document.getElementById('txt-acciones').innerText = r.textos.acciones;
-  document.getElementById('txt-observaciones').textContent = r.textos.observaciones;
+  // Solo pedimos el análisis del gráfico 1 por ahora
+  const r1 = await apiPost('obtenerAnalisisIA', { token: USUARIO.token, tipoGrafico: 'poblacion_afectada' });
+  if (r1.ok && r1.textos) {
+    document.getElementById('txt-resumen-afectada').textContent = r1.textos.resumen;
+    document.getElementById('txt-acciones-afectada').innerText = r1.textos.acciones;
+    document.getElementById('txt-observaciones-afectada').textContent = r1.textos.observaciones;
+  }
 }
 
 function cerrarSesion() {
