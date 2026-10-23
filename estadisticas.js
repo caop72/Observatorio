@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (DATOS_ESTADISTICAS && DATOS_MIS_OPT) {
     document.getElementById('kpi-total').textContent = DATOS_ESTADISTICAS.totalOpts;
     cambiarGrafico('activas'); // Cargamos el primero alfabéticamente por defecto
+    cargarInformeGlobal(); // <-- NUEVA LÍNEA
   } else {
     alert("Error cargando los datos. Revisa la consola.");
   }
@@ -118,7 +119,14 @@ async function cambiarGrafico(tipo) {
     document.getElementById('din-observaciones').textContent = rTex.textos.observaciones;
   }
 }
-
+async function cargarInformeGlobal() {
+  const rTex = await apiPost('obtenerResumenGlobal', { token: USUARIO.token });
+  if (rTex.ok && rTex.textos) {
+    document.getElementById('global-resumen').textContent = rTex.textos.resumen;
+    document.getElementById('global-acciones').innerText = rTex.textos.acciones;
+    document.getElementById('global-observaciones').textContent = rTex.textos.observaciones;
+  }
+}
 function cerrarSesion() {
   localStorage.removeItem('oep_usuario');
   location.href = 'index.html';
