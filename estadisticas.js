@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
 
   cargarEstadisticas();
+  cargarMisOPT();
 });
 
 async function apiPost(accion, datos) {
