@@ -1,17 +1,23 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
-
 let USUARIO = null;
+let DATOS_MIS_OPT = null; // Guardaremos la data aquí
+let chartDinamico = null; // Instancia del gráfico actual
 
 document.addEventListener('DOMContentLoaded', async () => {
   USUARIO = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
   if (!USUARIO || !USUARIO.token) { location.href = 'index.html'; return; }
-  
-  document.getElementById('nav-usuario').textContent =
-    (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
+  document.getElementById('nav-usuario').textContent = (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
 
-  cargarEstadisticas(); // Gráficos viejos
-  cargarMisOPT();       // Gráficos nuevos (rápido)
-  cargarAnalisisIA();   // Textos de DeepSeek (en segundo plano)
+  cargarEstadisticas(); // Carga los gráficos de arriba (los viejos)
+  
+  // Pedimos la data del nuevo dashboard
+  const r = await apiPost('obtenerDashboardMisOPT', { token: USUARIO.token });
+  if (r.ok) {
+    DATOS_MIS_OPT = r;
+    cambiarGrafico('poblacion_afectada'); // Cargamos el primero por defecto
+  } else {
+    alert("Error cargando Mis OPT: " + r.error);
+  }
 });
 
 async function apiPost(accion, datos) {
@@ -23,6 +29,106 @@ async function apiPost(accion, datos) {
   return await r.json();
 }
 
+// ==========================================
+// LÓGICA DEL SELECTOR DE GRÁFICOS
+// ==========================================
+async function cambiarGrafico(tipo) {
+  if (!DATOS_MIS_OPT) return;
+
+  // 1. Limpiar el gráfico anterior si existe
+  if (chartDinamico) { chartDinamico.destroy(); }
+  
+  // Limpiar tablas anteriores si el gráfico de población las inyectó
+  const tablaAnterior = document.querySelector('#din-canvas-container table');
+  if (tablaAnterior) tablaAnterior.remove();
+
+  const ctx = document.getElementById('chart-dinamico').getContext('2d');
+  const d = DATOS_MIS_OPT;
+  
+  let titulo = "";
+  let subtitulo = "";
+
+  // 2. Configurar el gráfico según la selección
+  if (tipo === 'poblacion_afectada') {
+    titulo = "Población Afectada por Inoperatividad";
+    subtitulo = "Ciudadanos sin servicio postal por fallas técnicas o cierres.";
+    chartDinamico = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: d.poblacion_afectada.por_estado.map(x => x.estado), datasets: [{ label: 'Afectados', data: d.poblacion_afectada.por_estado.map(x => x.poblacion), backgroundColor: '#dc3545' }] },
+      options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+    });
+  } 
+  else if (tipo === 'top10') {
+    titulo = "Top 10 Estados por cantidad de OPT";
+    subtitulo = "Estados con mayor presencia de infraestructura postal.";
+    chartDinamico = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: d.top_10_estados_por_opt.map(x => x.estado), datasets: [{ label: 'Cantidad', data: d.top_10_estados_por_opt.map(x => x.cantidad), backgroundColor: '#6f42c1' }] },
+      options: { plugins: { legend: { display: false } } }
+    });
+  } 
+  else if (tipo === 'poblacion_total') {
+    titulo = "Población Total Atendida por Estado";
+    subtitulo = "Basado en el Censo 2011 cruzado con las OPT registradas.";
+    chartDinamico = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: d.poblacion_total.por_estado.map(x => x.estado), datasets: [{ label: 'Población', data: d.poblacion_total.por_estado.map(x => x.poblacion), backgroundColor: '#0d6efd' }] },
+      options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+    });
+    
+    // Inyectar la tabla debajo del gráfico
+    let htmlTabla = '<table class="table table-sm table-hover mt-3" style="font-size: 0.85rem;"><thead class="table-light"><tr><th>Estado</th><th class="text-end">Población Atendida</th></tr></thead><tbody>';
+    d.poblacion_total.por_estado.forEach(row => { htmlTabla += `<tr><td>${row.estado}</td><td class="text-end">${row.poblacion.toLocaleString('es-VE')}</td></tr>`; });
+    htmlTabla += '</tbody></table>';
+    document.getElementById('din-canvas-container').insertAdjacentHTML('beforeend', htmlTabla);
+  }
+  else if (tipo === 'activas') {
+    titulo = "Activas vs Inactivas";
+    subtitulo = "Estado administrativo de las oficinas postales.";
+    chartDinamico = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels: ['Activas', 'Inactivas'], datasets: [{ data: [d.activas_inactivas.activas, d.activas_inactivas.inactivas], backgroundColor: ['#198754', '#6c757d'] }] },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+  else if (tipo === 'cobertura') {
+    titulo = "Cobertura Parroquial";
+    subtitulo = "Parroquias que cuentan con al menos una OPT.";
+    chartDinamico = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels: ['Con OPT', 'Sin OPT'], datasets: [{ data: [d.cobertura_poblacional.parroquias_con_opt, d.cobertura_poblacional.parroquias_sin_opt], backgroundColor: ['#0dcaf0', '#e9ecef'] }] },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+  else if (tipo === 'operativas') {
+    titulo = "Estatus de Operatividad";
+    subtitulo = "Condición técnica actual de las OPT.";
+    const labels = Object.keys(d.estatus);
+    chartDinamico = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: 'Cantidad', data: labels.map(k => d.estatus[k]), backgroundColor: ['#198754', '#dc3545', '#ffc107', '#6c757d'] }] },
+      options: { plugins: { legend: { display: false } } }
+    });
+  }
+
+  // 3. Actualizar los títulos
+  document.getElementById('din-titulo').textContent = titulo;
+  document.getElementById('din-subtitulo').textContent = subtitulo;
+
+  // 4. Pedir los textos fijos del backend
+  document.getElementById('din-resumen').textContent = "Cargando análisis...";
+  document.getElementById('din-acciones').textContent = "Cargando análisis...";
+  document.getElementById('din-observaciones').textContent = "Cargando análisis...";
+
+  const rTex = await apiPost('obtenerAnalisisIA', { token: USUARIO.token, tipoGrafico: tipo });
+  if (rTex.ok && rTex.textos) {
+    document.getElementById('din-resumen').textContent = rTex.textos.resumen;
+    document.getElementById('din-acciones').innerText = rTex.textos.acciones;
+    document.getElementById('din-observaciones').textContent = rTex.textos.observaciones;
+  }
+}
+
+// Función original para los gráficos de arriba (no la tocamos)
 async function cargarEstadisticas() {
   const r = await apiPost('obtenerEstadisticasV2', { token: USUARIO.token });
   if (!r.ok) return;
@@ -56,73 +162,6 @@ async function cargarEstadisticas() {
     data: { labels: r.porDia.fechas, datasets: [{ label: 'Reportes', data: r.porDia.valores, borderColor: '#1a3d7c', backgroundColor: 'rgba(26,61,124,0.1)', tension: 0.2, fill: true }] },
     options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
   });
-}
-
-async function cargarMisOPT() {
-  const r = await apiPost('obtenerDashboardMisOPT', { token: USUARIO.token });
-  if (!r.ok) { console.error('Error:', r.error); return; }
-
-  new Chart(document.getElementById('chart-poblacion-afectada'), {
-    type: 'bar',
-    data: { labels: r.poblacion_afectada.por_estado.map(x => x.estado), datasets: [{ label: 'Población afectada', data: r.poblacion_afectada.por_estado.map(x => x.poblacion), backgroundColor: '#dc3545' }] },
-    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
-  });
-
-  new Chart(document.getElementById('chart-top10'), {
-    type: 'bar',
-    data: { labels: r.top_10_estados_por_opt.map(x => x.estado), datasets: [{ label: 'Cantidad de OPT', data: r.top_10_estados_por_opt.map(x => x.cantidad), backgroundColor: '#6f42c1' }] },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-  });
-
-  // Gráfico de Población Total
-  const estadosPob = r.poblacion_total.por_estado;
-  new Chart(document.getElementById('chart-poblacion-total'), {
-    type: 'bar',
-    data: { labels: estadosPob.map(x => x.estado), datasets: [{ label: 'Población', data: estadosPob.map(x => x.poblacion), backgroundColor: '#3b82f6', borderRadius: 4 }] },
-    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
-  });
-
-  // Tabla de Población Total
-  let htmlTabla = '<table class="table table-sm table-hover mt-3" style="font-size: 0.85rem;">';
-  htmlTabla += '<thead class="table-light"><tr><th>Estado</th><th class="text-end">Población Atendida</th></tr></thead><tbody>';
-  estadosPob.forEach(row => {
-    htmlTabla += `<tr><td>${row.estado}</td><td class="text-end">${row.poblacion.toLocaleString('es-VE')}</td></tr>`;
-  });
-  htmlTabla += '</tbody></table>';
-  
-  const contenedorPob = document.getElementById('contenedor-poblacion');
-  const tablaAnterior = contenedorPob.querySelector('table');
-  if (tablaAnterior) tablaAnterior.remove();
-  contenedorPob.insertAdjacentHTML('beforeend', htmlTabla);
-
-  new Chart(document.getElementById('chart-activas'), {
-    type: 'doughnut',
-    data: { labels: ['Activas', 'Inactivas'], datasets: [{ data: [r.activas_inactivas.activas, r.activas_inactivas.inactivas], backgroundColor: ['#198754', '#6c757d'] }] },
-    options: { plugins: { legend: { position: 'bottom' } } }
-  });
-
-  new Chart(document.getElementById('chart-cobertura'), {
-    type: 'doughnut',
-    data: { labels: ['Con OPT', 'Sin OPT'], datasets: [{ data: [r.cobertura_poblacional.parroquias_con_opt, r.cobertura_poblacional.parroquias_sin_opt], backgroundColor: ['#0dcaf0', '#e9ecef'] }] },
-    options: { plugins: { legend: { position: 'bottom' } } }
-  });
-
-  const estatusLabels = Object.keys(r.estatus);
-  new Chart(document.getElementById('chart-operativas'), {
-    type: 'bar',
-    data: { labels: estatusLabels, datasets: [{ label: 'Cantidad de OPT', data: estatusLabels.map(k => r.estatus[k]), backgroundColor: ['#198754', '#dc3545', '#ffc107', '#6c757d'] }] },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-  });
-}
-
-async function cargarAnalisisIA() {
-  // Solo pedimos el análisis del gráfico 1 por ahora
-  const r1 = await apiPost('obtenerAnalisisIA', { token: USUARIO.token, tipoGrafico: 'poblacion_afectada' });
-  if (r1.ok && r1.textos) {
-    document.getElementById('txt-resumen-afectada').textContent = r1.textos.resumen;
-    document.getElementById('txt-acciones-afectada').innerText = r1.textos.acciones;
-    document.getElementById('txt-observaciones-afectada').textContent = r1.textos.observaciones;
-  }
 }
 
 function cerrarSesion() {
