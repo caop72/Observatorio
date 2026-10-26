@@ -8,21 +8,29 @@ let chartDinamico = null;
 document.addEventListener('DOMContentLoaded', async () => {
   USUARIO = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
   if (!USUARIO || !USUARIO.token) { location.href = 'index.html'; return; }
-  document.getElementById('nav-usuario').textContent = (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
+  
+  const navUsuario = document.getElementById('nav-usuario');
+  if (navUsuario) navUsuario.textContent = (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
 
-  const [r1, r2] = await Promise.all([
-    apiPost('obtenerEstadisticasV2', { token: USUARIO.token }),
-    apiPost('obtenerDashboardMisOPT', { token: USUARIO.token })
-  ]);
+  try {
+    const [r1, r2] = await Promise.all([
+      apiPost('obtenerEstadisticasV2', { token: USUARIO.token }),
+      apiPost('obtenerDashboardMisOPT', { token: USUARIO.token })
+    ]);
 
-  if (r1.ok) DATOS_ESTADISTICAS = r1;
-  if (r2.ok) DATOS_MIS_OPT = r2;
+    if (r1.ok) DATOS_ESTADISTICAS = r1;
+    if (r2.ok) DATOS_MIS_OPT = r2;
 
-  if (DATOS_ESTADISTICAS && DATOS_MIS_OPT) {
-    document.getElementById('kpi-total').textContent = DATOS_ESTADISTICAS.totalOpts;
-    cambiarGrafico('informe_global'); // Cargamos el informe global por defecto
-  } else {
-    alert("Error cargando los datos. Revisa la consola.");
+    if (DATOS_ESTADISTICAS && DATOS_MIS_OPT) {
+      document.getElementById('kpi-total').textContent = DATOS_ESTADISTICAS.totalOpts;
+      cambiarGrafico('informe_global'); // Cargamos el informe global por defecto
+    } else {
+      alert("Error cargando los datos. Revisa la consola.");
+      console.error("Error en API:", r1, r2);
+    }
+  } catch (error) {
+    console.error("Error en la petición inicial:", error);
+    alert("Error de conexión con el servidor.");
   }
 });
 
@@ -49,39 +57,50 @@ async function cambiarGrafico(tipo) {
 
   // Lógica especial para el Informe Global
   if (tipo === 'informe_global') {
-    canvasContainer.style.display = 'none';
-    panelGlobal.style.display = 'block';
-    btnPdf.style.display = 'block'; // Mostrar botón PDF
+    if(canvasContainer) canvasContainer.style.display = 'none';
+    if(panelGlobal) panelGlobal.style.display = 'block';
+    if(btnPdf) btnPdf.style.display = 'block'; 
     
-    document.getElementById('din-titulo').textContent = "Informe Gerencial Global del Observatorio";
-    document.getElementById('din-subtitulo').textContent = "Consolidado de infraestructura, población y operatividad nacional.";
+    const tituloEl = document.getElementById('din-titulo');
+    const subEl = document.getElementById('din-subtitulo');
+    if(tituloEl) tituloEl.textContent = "Informe Gerencial Global del Observatorio";
+    if(subEl) subEl.textContent = "Consolidado de infraestructura, población y operatividad nacional.";
 
-    document.getElementById('din-resumen').textContent = "Analizando datos globales...";
-    document.getElementById('din-acciones').textContent = "Generando recomendaciones...";
-    document.getElementById('din-observaciones').textContent = "Evaluando tendencias...";
+    const resEl = document.getElementById('din-resumen');
+    const accEl = document.getElementById('din-acciones');
+    const obsEl = document.getElementById('din-observaciones');
+    
+    if(resEl) resEl.textContent = "Analizando datos globales...";
+    if(accEl) accEl.textContent = "Generando recomendaciones...";
+    if(obsEl) obsEl.textContent = "Evaluando tendencias...";
 
-    // Llamamos a la función del backend que crea el informe global
-    const rTex = await apiPost('obtenerResumenGlobal', { token: USUARIO.token });
-    if (rTex.ok && rTex.textos) {
-      document.getElementById('din-resumen').textContent = rTex.textos.resumen;
-      document.getElementById('din-acciones').innerText = rTex.textos.acciones;
-      document.getElementById('din-observaciones').textContent = rTex.textos.observaciones;
+    try {
+      const rTex = await apiPost('obtenerResumenGlobal', { token: USUARIO.token });
+      if (rTex.ok && rTex.textos) {
+        if(resEl) resEl.textContent = rTex.textos.resumen;
+        if(accEl) accEl.innerText = rTex.textos.acciones;
+        if(obsEl) obsEl.textContent = rTex.textos.observaciones;
+      }
+    } catch (e) {
+      console.error("Error cargando el resumen global:", e);
     }
-    return; // Terminamos aquí para no dibujar el gráfico
+    return; 
   }
 
   // Para el resto de gráficos normales
-  canvasContainer.style.display = 'block';
-  panelGlobal.style.display = 'none';
-  btnPdf.style.display = 'none'; // Ocultar botón PDF
+  if(canvasContainer) canvasContainer.style.display = 'block';
+  if(panelGlobal) panelGlobal.style.display = 'none';
+  if(btnPdf) btnPdf.style.display = 'none'; 
 
-  const ctx = document.getElementById('chart-dinamico').getContext('2d');
+  const canvasElement = document.getElementById('chart-dinamico');
+  if(!canvasElement) return;
+  
+  const ctx = canvasElement.getContext('2d');
   const d = DATOS_MIS_OPT;
   const e = DATOS_ESTADISTICAS;
   
-  let titulo = "", subtitulo = "";
+  let titulo = "Gráfico Estadístico", subtitulo = "";
 
-  // ... (Aquí va toda la lógica de los if/else de los gráficos que ya tenías) ...
   if (tipo === 'activas') {
     titulo = "Activas vs Inactivas (Administrativo)";
     subtitulo = "Estado administrativo de las oficinas postales registradas.";
@@ -116,7 +135,7 @@ async function cambiarGrafico(tipo) {
     let htmlTabla = '<table class="table table-sm table-hover mt-3" style="font-size: 0.85rem;"><thead class="table-light"><tr><th>Estado</th><th class="text-end">Población Atendida</th></tr></thead><tbody>';
     d.poblacion_total.por_estado.forEach(row => { htmlTabla += `<tr><td>${row.estado}</td><td class="text-end">${row.poblacion.toLocaleString('es-VE')}</td></tr>`; });
     htmlTabla += '</tbody></table>';
-    document.getElementById('din-canvas-container').insertAdjacentHTML('beforeend', htmlTabla);
+    if(canvasContainer) canvasContainer.insertAdjacentHTML('beforeend', htmlTabla);
   }
   else if (tipo === 'region') {
     titulo = "OPTs por Región";
@@ -133,46 +152,64 @@ async function cambiarGrafico(tipo) {
     titulo = "Top 10 Estados por cantidad de OPT";
     subtitulo = "Estados con mayor presencia de infraestructura postal.";
     chartDinamico = new Chart(ctx, { type: 'bar', data: { labels: d.top_10_estados_por_opt.map(x => x.estado), datasets: [{ label: 'Cantidad', data: d.top_10_estados_por_opt.map(x => x.cantidad), backgroundColor: '#6f42c1' }] }, options: { plugins: { legend: { display: false } } } });
+  } else {
+    // Fallback por si envían un tipo desconocido
+    titulo = "Tipo de gráfico no reconocido";
+    subtitulo = "Por favor, seleccione otra opción del menú.";
   }
 
-  document.getElementById('din-titulo').textContent = titulo;
-  document.getElementById('din-subtitulo').textContent = subtitulo;
+  const tituloEl = document.getElementById('din-titulo');
+  const subEl = document.getElementById('din-subtitulo');
+  if(tituloEl) tituloEl.textContent = titulo;
+  if(subEl) subEl.textContent = subtitulo;
 
   // Pedir los textos analíticos al backend
-  document.getElementById('din-resumen').textContent = "Generando análisis...";
-  document.getElementById('din-acciones').textContent = "Generando acciones...";
-  document.getElementById('din-observaciones').textContent = "Generando observaciones...";
+  const resEl = document.getElementById('din-resumen');
+  const accEl = document.getElementById('din-acciones');
+  const obsEl = document.getElementById('din-observaciones');
 
-  const rTex = await apiPost('obtenerAnalisisIA', { token: USUARIO.token, tipoGrafico: tipo });
-  if (rTex.ok && rTex.textos) {
-    document.getElementById('din-resumen').textContent = rTex.textos.resumen;
-    document.getElementById('din-acciones').innerText = rTex.textos.acciones;
-    document.getElementById('din-observaciones').textContent = rTex.textos.observaciones;
+  if(resEl) resEl.textContent = "Generando análisis...";
+  if(accEl) accEl.textContent = "Generando acciones...";
+  if(obsEl) obsEl.textContent = "Generando observaciones...";
+
+  try {
+    const rTex = await apiPost('obtenerAnalisisIA', { token: USUARIO.token, tipoGrafico: tipo });
+    if (rTex.ok && rTex.textos) {
+      if(resEl) resEl.textContent = rTex.textos.resumen;
+      if(accEl) accEl.innerText = rTex.textos.acciones;
+      if(obsEl) obsEl.textContent = rTex.textos.observaciones;
+    }
+  } catch (error) {
+    console.error("Error al generar análisis:", error);
   }
 }
 
-// Función vacía por ahora para el botón PDF
 async function descargarPdfInforme() {
   const btn = document.getElementById('btn-pdf');
+  if(!btn) return;
+  
   const textoOriginal = btn.innerHTML;
   
-  // Feedback visual mientras se genera
   btn.innerHTML = '⏳ Generando PDF...';
   btn.disabled = true;
 
-  const r = await apiPost('generarPdfInformeGlobal', { token: USUARIO.token });
-  
-  btn.innerHTML = textoOriginal;
-  btn.disabled = false;
-
-  if (r.ok && r.pdfUrl) {
-    // Abrir el PDF en una nueva pestaña para descargar/imprimir
-    window.open(r.pdfUrl, '_blank');
-    alert('¡Informe PDF generado con éxito!\nSe ha abierto en una nueva pestaña y se guardó en tu Google Drive.');
-  } else {
-    alert('Error al generar el PDF: ' + (r.error || 'Desconocido'));
+  try {
+    const r = await apiPost('generarPdfInformeGlobal', { token: USUARIO.token });
+    if (r.ok && r.pdfUrl) {
+      window.open(r.pdfUrl, '_blank');
+      alert('¡Informe PDF generado con éxito!\nSe ha abierto en una nueva pestaña y se guardó en tu Google Drive.');
+    } else {
+      alert('Error al generar el PDF: ' + (r.error || 'Desconocido'));
+    }
+  } catch (error) {
+    alert('Error de conexión al intentar generar el PDF.');
+    console.error(error);
+  } finally {
+    btn.innerHTML = textoOriginal;
+    btn.disabled = false;
   }
 }
+
 function cerrarSesion() {
   localStorage.removeItem('oep_usuario');
   location.href = 'index.html';
