@@ -40,7 +40,6 @@
       <div class="card mb-3 shadow-sm">
         <div class="card-header bg-secondary text-white"><strong>1. Estatus del día</strong></div>
         <div class="card-body">
-
           <div class="mb-3">
             <label class="form-label">Estatus operativo *</label>
             <select id="estatus" class="form-select" onchange="toggleCausa()">
@@ -50,39 +49,27 @@
               <option value="CIERRE_TECNICO">Cierre Técnico</option>
             </select>
           </div>
-
           <div class="row g-2 mb-3">
             <div class="col-md-6">
               <label class="form-label">¿Abierta al público? *</label>
-              <select id="abierta" class="form-select">
-                <option value="">Seleccione...</option>
-              </select>
+              <select id="abierta" class="form-select"><option value="">Seleccione...</option></select>
             </div>
             <div class="col-md-6">
               <label class="form-label">Estatus legal *</label>
-              <select id="estatus-legal" class="form-select">
-                <option value="">Seleccione...</option>
-              </select>
+              <select id="estatus-legal" class="form-select"><option value="">Seleccione...</option></select>
             </div>
           </div>
-
           <div class="mb-3" id="bloque-causa" style="display:none;">
             <label class="form-label">Causa *</label>
-            <textarea id="causa" class="form-control" rows="2"
-                      placeholder="Explica brevemente el motivo"></textarea>
+            <textarea id="causa" class="form-control" rows="2" placeholder="Explica brevemente el motivo"></textarea>
           </div>
-
           <div class="mb-3">
             <label class="form-label">Observación del día *</label>
             <div class="input-group">
-              <select id="observacion" class="form-select">
-                <option value="">Seleccione...</option>
-              </select>
-              <button class="btn btn-outline-primary" type="button"
-                      onclick="abrirModalAgregar('OBSERVACIONES','observacion')">+</button>
+              <select id="observacion" class="form-select"><option value="">Seleccione...</option></select>
+              <button class="btn btn-outline-primary" type="button" onclick="abrirModalAgregar('OBSERVACIONES','observacion')">+</button>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -179,34 +166,55 @@
         </div>
       </div>
 
-      <!-- BLOQUE 3: NOVEDADES -->
+      <!-- BLOQUE 3: DIAGNÓSTICO OPERATIVO (LOS 9 INDICADORES) -->
       <div class="card mb-3 shadow-sm">
-        <div class="card-header bg-secondary text-white"><strong>3. Novedades (opcional)</strong></div>
+        <div class="card-header bg-secondary text-white"><strong>3. Diagnóstico Operativo (Indicadores)</strong></div>
         <div class="card-body">
-
-          <div class="mb-3">
-            <label class="form-label">Vehículos</label>
-            <textarea id="novedad-vehiculos" class="form-control" rows="2"
-                      placeholder="Ej: Un vehículo fuera de servicio"></textarea>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Infraestructura</label>
+              <select id="ind-IND-01" class="form-select"><option value="">Seleccione...</option><option>Operativa</option><option>Requiere mantenimiento</option><option>Inoperativa</option><option>Colapsada</option></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Estatus Legal</label>
+              <select id="ind-IND-03" class="form-select"><option value="">Seleccione...</option><option>Propia</option><option>Arrendada</option><option>Comodato</option><option>En litigio</option></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Equipos de Computación (Cant. Operativos)</label>
+              <input type="number" id="ind-IND-04" class="form-control" min="0" placeholder="Ej: 3">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Internet</label>
+              <select id="ind-IND-05" class="form-select"><option value="">Seleccione...</option><option>Posee operativa</option><option>Intermitente</option><option>Sin servicio</option><option>No posee</option></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Vehículos</label>
+              <select id="ind-IND-06" class="form-select"><option value="">Seleccione...</option><option>Posee operativa</option><option>Posee inoperativa</option><option>No posee</option><option>Por defecto</option></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Agua Potable</label>
+              <select id="ind-IND-07" class="form-select"><option value="">Seleccione...</option><option>Operativa</option><option>Intermitente</option><option>Sin servicio</option></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Servicio Eléctrico</label>
+              <select id="ind-IND-08" class="form-select"><option value="">Seleccione...</option><option>Operativa</option><option>Intermitente</option><option>Sin servicio</option></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Aire Acondicionado</label>
+              <select id="ind-IND-09" class="form-select"><option value="">Seleccione...</option><option>Operativo</option><option>Parcial</option><option>Inoperativo</option><option>No posee</option></select>
+            </div>
           </div>
+        </div>
+      </div>
 
-          <div class="mb-3">
-            <label class="form-label">Infraestructura</label>
-            <textarea id="novedad-infraestructura" class="form-control" rows="2"
-                      placeholder="Ej: Filtración en techo"></textarea>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Conectividad</label>
-            <textarea id="novedad-conectividad" class="form-control" rows="2"
-                      placeholder="Ej: Intermitencia en internet"></textarea>
-          </div>
-
+      <!-- BLOQUE 4: NOVEDADES -->
+      <div class="card mb-3 shadow-sm">
+        <div class="card-header bg-secondary text-white"><strong>4. Novedades y Observaciones (opcional)</strong></div>
+        <div class="card-body">
           <div class="mb-3">
             <label class="form-label">Observaciones generales</label>
-            <textarea id="observaciones" class="form-control" rows="2"></textarea>
+            <textarea id="observaciones" class="form-control" rows="3" placeholder="Escribe aquí cualquier novedad del día que no esté cubierta por los indicadores."></textarea>
           </div>
-
         </div>
       </div>
 
