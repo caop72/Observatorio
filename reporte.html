@@ -40,15 +40,50 @@
       <div class="card mb-3 shadow-sm">
         <div class="card-header bg-secondary text-white"><strong>1. Estatus del día</strong></div>
         <div class="card-body">
+
           <div class="mb-3">
             <label class="form-label">Estatus operativo *</label>
             <select id="estatus" class="form-select" onchange="toggleCausa()">
               <option value="">Seleccione...</option>
               <option value="OPERATIVA">Operativa</option>
               <option value="INOPERATIVA">Inoperativa</option>
-              <option value="CIERRE_TECNICO">Cierre Técnico</option>
             </select>
           </div>
+
+          <!-- CONTENEDOR CONDICIONAL: Solo aparece si es INOPERATIVA -->
+          <div id="bloque-causa" style="display:none; background-color:#f8f9fa; padding:15px; border-radius:5px; border-left:4px solid #dc3545; margin-bottom:20px;">
+            <h6 class="text-danger mb-3">Detalle de la Inoperatividad</h6>
+            
+            <div class="row g-2 mb-2">
+              <div class="col-md-6">
+                <label class="form-label">Factor Causante *</label>
+                <select id="causa-factor" class="form-select">
+                  <option value="">Seleccione...</option>
+                  <option value="Factor Humano">Factor Humano</option>
+                  <option value="Factor Legal">Factor Legal</option>
+                  <option value="Factor Logístico">Factor Logístico</option>
+                  <option value="Infraestructura">Infraestructura</option>
+                  <option value="Decretada por Cierre Técnico">Decretada por Cierre Técnico</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Fecha del pase a la situación *</label>
+                <input type="date" id="causa-fecha" class="form-control">
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label">Explicación breve de la causa *</label>
+              <textarea id="causa-explicacion" class="form-control" rows="2" placeholder="Ej: Falla estructural en el techo por filtraciones..."></textarea>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label">Acción tomada *</label>
+              <textarea id="causa-accion" class="form-control" rows="2" placeholder="Ej: Se notificó a Infraestructura para evaluación técnica."></textarea>
+            </div>
+          </div>
+
+          <!-- RESTO DEL BLOQUE 1 (ABIERTA, LEGAL, OBSERVACIÓN) SE MANTIENE IGUAL -->
           <div class="row g-2 mb-3">
             <div class="col-md-6">
               <label class="form-label">¿Abierta al público? *</label>
@@ -59,10 +94,7 @@
               <select id="estatus-legal" class="form-select"><option value="">Seleccione...</option></select>
             </div>
           </div>
-          <div class="mb-3" id="bloque-causa" style="display:none;">
-            <label class="form-label">Causa *</label>
-            <textarea id="causa" class="form-control" rows="2" placeholder="Explica brevemente el motivo"></textarea>
-          </div>
+
           <div class="mb-3">
             <label class="form-label">Observación del día *</label>
             <div class="input-group">
@@ -70,6 +102,7 @@
               <button class="btn btn-outline-primary" type="button" onclick="abrirModalAgregar('OBSERVACIONES','observacion')">+</button>
             </div>
           </div>
+
         </div>
       </div>
 
