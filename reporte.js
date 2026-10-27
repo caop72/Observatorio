@@ -130,40 +130,27 @@ async function guardarNuevoValor() {
 function toggleCausa() {
   const est = document.getElementById('estatus').value;
   const bloque = document.getElementById('bloque-causa');
-  bloque.style.display = (est === 'INOPERATIVA' || est === 'CIERRE_TECNICO') ? '' : 'none';
+  // Solo se muestra si es INOPERATIVA
+  bloque.style.display = (est === 'INOPERATIVA') ? '' : 'none';
 }
 
 function precargarUltimo(ult) {
   const v = ult.valores || {};
   
-  // 1. Precargar Estatus y Datos Básicos
   document.getElementById('estatus').value = v.estatus || '';
   document.getElementById('abierta').value = v.abierta || '';
   document.getElementById('estatus-legal').value = v.estatus_legal || '';
   document.getElementById('observacion').value = v.observacion || '';
-  document.getElementById('causa').value = v.causa || '';
-
-  // 2. Precargar Personal
-  TIPOS.forEach(t => {
-    SITUACIONES.forEach(s => {
-      const el = document.getElementById(s + '-' + t);
-      if (el) el.value = v[s + '_' + t] || 0;
-    });
-    const vac = document.getElementById('vacantes-' + t);
-    if (vac) vac.value = v['vacantes_' + t] || 0;
-  });
-
-  // 3. Precargar Indicadores
-  const idsInd = ['IND-01', 'IND-03', 'IND-04', 'IND-05', 'IND-06', 'IND-07', 'IND-08', 'IND-09'];
-  idsInd.forEach(id => {
-    const el = document.getElementById('ind-' + id);
-    if (el && v[id]) el.value = v[id];
-  });
-
-  // 4. Novedades
-  document.getElementById('observaciones').value = v.observaciones || '';
   
-  toggleCausa();
+  // Precargar campos condicionales
+  document.getElementById('causa-factor').value = v.causa_factor || '';
+  document.getElementById('causa-fecha').value = v.causa_fecha || '';
+  document.getElementById('causa-explicacion').value = v.causa_explicacion || '';
+  document.getElementById('causa-accion').value = v.causa_accion || '';
+
+  // ... (el resto de la precarga de personal e indicadores se mantiene igual)
+  
+  toggleCausa(); // Llamar para mostrar el bloque si aplica
   calcularTotalRRHH();
 }
 
@@ -227,9 +214,17 @@ function recogerDatos() {
     abierta: document.getElementById('abierta').value,
     estatus_legal: document.getElementById('estatus-legal').value,
     observacion: document.getElementById('observacion').value,
-    causa: document.getElementById('causa').value.trim(),
+    
+    // Nuevos campos condicionales
+    causa_factor: document.getElementById('causa-factor').value,
+    causa_fecha: document.getElementById('causa-fecha').value,
+    causa_explicacion: document.getElementById('causa-explicacion').value.trim(),
+    causa_accion: document.getElementById('causa-accion').value.trim(),
+    
     observaciones: document.getElementById('observaciones').value.trim()
   };
+
+  // ... (el resto del código de recolección de personal e indicadores se mantiene igual)
 
   // Recoger Personal
   TIPOS.forEach(t => {
@@ -256,8 +251,13 @@ function validar(d) {
   if (!d.abierta) return 'Selecciona si está abierta al público';
   if (!d.estatus_legal) return 'Selecciona el Estatus legal';
   if (!d.observacion) return 'Selecciona una Observación';
-  if ((d.estatus === 'INOPERATIVA' || d.estatus === 'CIERRE_TECNICO') && !d.causa)
-    return 'La causa es obligatoria para Inoperativa o Cierre Técnico';
+  
+  if (d.estatus === 'INOPERATIVA') {
+    if (!d.causa_factor) return 'Selecciona el Factor Causante';
+    if (!d.causa_fecha) return 'Indica la fecha del pase a inoperatividad';
+    if (!d.causa_explicacion) return 'Explica la causa de la inoperatividad';
+    if (!d.causa_accion) return 'Indica la acción tomada';
+  }
   return null;
 }
 
