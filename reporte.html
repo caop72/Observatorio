@@ -36,23 +36,40 @@
     <div id="form-reporte">
       <h4 class="mb-3 text-white">Reporte del <span id="fecha-hoy"></span></h4>
 
-      <!-- BLOQUE 1: ESTATUS DEL DÍA -->
+            <!-- BLOQUE 1: ESTATUS DEL DÍA -->
       <div class="card mb-3 shadow-sm">
-        <div class="card-header bg-secondary text-white"><strong>1. Estatus del día</strong></div>
+        <div class="card-header bg-secondary text-white"><strong>1. Estatus de la Oficina</strong></div>
         <div class="card-body">
 
+          <!-- 1. ¿Abierta al público? -->
           <div class="mb-3">
-            <label class="form-label">Estatus operativo *</label>
-            <select id="estatus" class="form-select" onchange="toggleCausa()">
+            <label class="form-label">¿La oficina está abierta al público hoy? *</label>
+            <select id="abierta" class="form-select" onchange="toggleAbierta()">
+              <option value="">Seleccione...</option>
+              <option value="SI">Sí (Activa)</option>
+              <option value="NO">No (Inactiva)</option>
+            </select>
+          </div>
+
+          <!-- Si NO está abierta, pregunto por qué (Inactividad Administrativa) -->
+          <div id="bloque-inactiva" style="display:none; background-color:#fff3cd; padding:15px; border-radius:5px; border-left:4px solid #ffc107; margin-bottom:20px;">
+             <label class="form-label">Causa de la inactividad *</label>
+             <textarea id="causa-inactiva" class="form-control" rows="2" placeholder="Ej: Personal de vacaciones, falta de permiso..."></textarea>
+          </div>
+
+          <!-- 2. Estatus Operativo -->
+          <div class="mb-3 mt-3">
+            <label class="form-label">Estatus Operativo (Capacidad de prestar servicio) *</label>
+            <select id="estatus" class="form-select" onchange="toggleCausaOperativa()">
               <option value="">Seleccione...</option>
               <option value="OPERATIVA">Operativa</option>
               <option value="INOPERATIVA">Inoperativa</option>
             </select>
           </div>
 
-          <!-- CONTENEDOR CONDICIONAL: Solo aparece si es INOPERATIVA -->
-          <div id="bloque-causa" style="display:none; background-color:#f8f9fa; padding:15px; border-radius:5px; border-left:4px solid #dc3545; margin-bottom:20px;">
-            <h6 class="text-danger mb-3">Detalle de la Inoperatividad</h6>
+          <!-- Si es INOPERATIVA, se despliega el árbol de decisiones -->
+          <div id="bloque-inoperativa" style="display:none; background-color:#f8d7da; padding:15px; border-radius:5px; border-left:4px solid #dc3545; margin-bottom:20px;">
+            <h6 class="text-danger mb-3">Detalle de la Inoperatividad Técnica</h6>
             
             <div class="row g-2 mb-2">
               <div class="col-md-6">
@@ -83,23 +100,18 @@
             </div>
           </div>
 
-          <!-- RESTO DEL BLOQUE 1 (ABIERTA, LEGAL, OBSERVACIÓN) SE MANTIENE IGUAL -->
+          <!-- RESTO DEL BLOQUE 1 -->
           <div class="row g-2 mb-3">
-            <div class="col-md-6">
-              <label class="form-label">¿Abierta al público? *</label>
-              <select id="abierta" class="form-select"><option value="">Seleccione...</option></select>
-            </div>
             <div class="col-md-6">
               <label class="form-label">Estatus legal *</label>
               <select id="estatus-legal" class="form-select"><option value="">Seleccione...</option></select>
             </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Observación del día *</label>
-            <div class="input-group">
-              <select id="observacion" class="form-select"><option value="">Seleccione...</option></select>
-              <button class="btn btn-outline-primary" type="button" onclick="abrirModalAgregar('OBSERVACIONES','observacion')">+</button>
+            <div class="col-md-6">
+              <label class="form-label">Observación del día *</label>
+              <div class="input-group">
+                <select id="observacion" class="form-select"><option value="">Seleccione...</option></select>
+                <button class="btn btn-outline-primary" type="button" onclick="abrirModalAgregar('OBSERVACIONES','observacion')">+</button>
+              </div>
             </div>
           </div>
 
