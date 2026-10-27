@@ -1,6 +1,6 @@
 /**************************************************************
- * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v11
- * Incluye recolección de los 9 Indicadores Gerenciales
+ * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v12
+ * Lógica condicional Activa/Inactiva y Operativa/Inoperativa
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -46,7 +46,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   const rCat = await api('obtenerCatalogos');
   if (rCat.ok) {
     CATALOGOS = rCat.catalogos || {};
-    llenarDropdown('abierta', CATALOGOS.SI_NO || []);
+    llenarDropdown('abierta', CATALOGOS.SI_NO || ['SI', 'NO']);
     llenarDropdown('estatus-legal', CATALOGOS.ESTATUS_LEGAL || []);
     llenarDropdown('observacion', CATALOGOS.OBSERVACIONES || []);
   }
@@ -125,32 +125,70 @@ async function guardarNuevoValor() {
 }
 
 // ============================================================
-// FORM
+// LÓGICA DE FORMULARIO CONDICIONAL
 // ============================================================
-function toggleCausa() {
-  const est = document.getElementById('estatus').value;
-  const bloque = document.getElementById('bloque-causa');
-  // Solo se muestra si es INOPERATIVA
-  bloque.style.display = (est === 'INOPERATIVA') ? '' : 'none';
+function toggleAbierta() {
+  const abierta = document.getElementById('abierta').value;
+  const bloqueInactiva = document.getElementById('bloque-inactiva');
+  
+  if (abierta === 'NO') {
+    bloqueInactiva.style.display = '';
+    document.getElementById('estatus').value = 'INOPERATIVA';
+    toggleCausaOperativa();
+  } else {
+    bloqueInactiva.style.display = 'none';
+    document.getElementById('causa-inactiva').value = '';
+  }
+}
+
+function toggleCausaOperativa() {
+  const estatus = document.getElementById('estatus').value;
+  const bloqueInoperativa = document.getElementById('bloque-inoperativa');
+  
+  if (estatus === 'INOPERATIVA') {
+    bloqueInoperativa.style.display = '';
+  } else {
+    bloqueInoperativa.style.display = 'none';
+    document.getElementById('causa-factor').value = '';
+    document.getElementById('causa-fecha').value = '';
+    document.getElementById('causa-explicacion').value = '';
+    document.getElementById('causa-accion').value = '';
+  }
 }
 
 function precargarUltimo(ult) {
   const v = ult.valores || {};
   
-  document.getElementById('estatus').value = v.estatus || '';
   document.getElementById('abierta').value = v.abierta || '';
+  document.getElementById('causa-inactiva').value = v.causa_inactiva || '';
+  document.getElementById('estatus').value = v.estatus || '';
   document.getElementById('estatus-legal').value = v.estatus_legal || '';
   document.getElementById('observacion').value = v.observacion || '';
   
-  // Precargar campos condicionales
   document.getElementById('causa-factor').value = v.causa_factor || '';
   document.getElementById('causa-fecha').value = v.causa_fecha || '';
   document.getElementById('causa-explicacion').value = v.causa_explicacion || '';
   document.getElementById('causa-accion').value = v.causa_accion || '';
 
-  // ... (el resto de la precarga de personal e indicadores se mantiene igual)
+  TIPOS.forEach(t => {
+    SITUACIONES.forEach(s => {
+      const el = document.getElementById(s + '-' + t);
+      if (el) el.value = v[s + '_' + t] || 0;
+    });
+    const vac = document.getElementById('vacantes-' + t);
+    if (vac) vac.value = v['vacantes_' + t] || 0;
+  });
+
+  const idsInd = ['IND-01', 'IND-03', 'IND-04', 'IND-05', 'IND-06', 'IND-07', 'IND-08', 'IND-09'];
+  idsInd.forEach(id => {
+    const el = document.getElementById('ind-' + id);
+    if (el && v[id]) el.value = v[id];
+  });
+
+  document.getElementById('observaciones').value = v.observaciones || '';
   
-  toggleCausa(); // Llamar para mostrar el bloque si aplica
+  toggleAbierta();
+  toggleCausaOperativa();
   calcularTotalRRHH();
 }
 
@@ -210,12 +248,12 @@ function calcularTotalRRHH() {
 // ============================================================
 function recogerDatos() {
   const d = {
-    estatus: document.getElementById('estatus').value,
     abierta: document.getElementById('abierta').value,
+    causa_inactiva: document.getElementById('causa-inactiva').value.trim(),
+    estatus: document.getElementById('estatus').value,
     estatus_legal: document.getElementById('estatus-legal').value,
     observacion: document.getElementById('observacion').value,
     
-    // Nuevos campos condicionales
     causa_factor: document.getElementById('causa-factor').value,
     causa_fecha: document.getElementById('causa-fecha').value,
     causa_explicacion: document.getElementById('causa-explicacion').value.trim(),
@@ -224,9 +262,6 @@ function recogerDatos() {
     observaciones: document.getElementById('observaciones').value.trim()
   };
 
-  // ... (el resto del código de recolección de personal e indicadores se mantiene igual)
-
-  // Recoger Personal
   TIPOS.forEach(t => {
     SITUACIONES.forEach(s => {
       d[s + '_' + t] = num_(s + '-' + t);
@@ -236,7 +271,6 @@ function recogerDatos() {
     d['total_' + t] = parseInt(document.getElementById('total-' + t).textContent, 10) || 0;
   });
 
-  // Recoger Indicadores (Los 9 semáforos)
   const idsInd = ['IND-01', 'IND-03', 'IND-04', 'IND-05', 'IND-06', 'IND-07', 'IND-08', 'IND-09'];
   idsInd.forEach(id => {
     const el = document.getElementById('ind-' + id);
@@ -247,8 +281,10 @@ function recogerDatos() {
 }
 
 function validar(d) {
-  if (!d.estatus) return 'Selecciona el Estatus operativo';
   if (!d.abierta) return 'Selecciona si está abierta al público';
+  if (d.abierta === 'NO' && !d.causa_inactiva) return 'Explica brevemente por qué está inactiva';
+  
+  if (!d.estatus) return 'Selecciona el Estatus operativo';
   if (!d.estatus_legal) return 'Selecciona el Estatus legal';
   if (!d.observacion) return 'Selecciona una Observación';
   
@@ -284,7 +320,7 @@ async function enviarReporte() {
       token: TOKEN,
       idOpt: USUARIO.opt || '',
       valores: d,
-      commit: d.causa || 'Sin novedades'
+      commit: d.causa_explicacion || d.causa_inactiva || 'Sin novedades'
     });
 
     if (!r.ok) { msg.textContent = r.error; return; }
