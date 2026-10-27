@@ -36,7 +36,7 @@
     <div id="form-reporte">
       <h4 class="mb-3 text-white">Reporte del <span id="fecha-hoy"></span></h4>
 
-            <!-- BLOQUE 1: ESTATUS DEL DÍA -->
+                  <!-- BLOQUE 1: ESTATUS DEL DÍA -->
       <div class="card mb-3 shadow-sm">
         <div class="card-header bg-secondary text-white"><strong>1. Estatus de la Oficina</strong></div>
         <div class="card-body">
@@ -51,7 +51,7 @@
             </select>
           </div>
 
-          <!-- Si NO está abierta, pregunto por qué (Inactividad Administrativa) -->
+          <!-- Si NO está abierta, pregunto por qué -->
           <div id="bloque-inactiva" style="display:none; background-color:#fff3cd; padding:15px; border-radius:5px; border-left:4px solid #ffc107; margin-bottom:20px;">
              <label class="form-label">Causa de la inactividad *</label>
              <textarea id="causa-inactiva" class="form-control" rows="2" placeholder="Ej: Personal de vacaciones, falta de permiso..."></textarea>
@@ -67,10 +67,9 @@
             </select>
           </div>
 
-          <!-- Si es INOPERATIVA, se despliega el árbol de decisiones -->
+          <!-- Si es INOPERATIVA, se despliega el árbol -->
           <div id="bloque-inoperativa" style="display:none; background-color:#f8d7da; padding:15px; border-radius:5px; border-left:4px solid #dc3545; margin-bottom:20px;">
             <h6 class="text-danger mb-3">Detalle de la Inoperatividad Técnica</h6>
-            
             <div class="row g-2 mb-2">
               <div class="col-md-6">
                 <label class="form-label">Factor Causante *</label>
@@ -88,12 +87,10 @@
                 <input type="date" id="causa-fecha" class="form-control">
               </div>
             </div>
-
             <div class="mb-2">
               <label class="form-label">Explicación breve de la causa *</label>
               <textarea id="causa-explicacion" class="form-control" rows="2" placeholder="Ej: Falla estructural en el techo por filtraciones..."></textarea>
             </div>
-
             <div class="mb-2">
               <label class="form-label">Acción tomada *</label>
               <textarea id="causa-accion" class="form-control" rows="2" placeholder="Ej: Se notificó a Infraestructura para evaluación técnica."></textarea>
