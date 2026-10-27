@@ -1,6 +1,6 @@
 /**************************************************************
- * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v10
- * Bloque 2: Parte del Personal matricial
+ * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v11
+ * Incluye recolección de los 9 Indicadores Gerenciales
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -104,9 +104,7 @@ async function guardarNuevoValor() {
 
   try {
     const r = await api('agregarValorCatalogo', {
-      token: TOKEN,
-      categoria: categoriaActual,
-      valor: valor
+      token: TOKEN, categoria: categoriaActual, valor: valor
     });
     if (!r.ok) { msg.textContent = r.error || 'Error'; return; }
 
@@ -123,9 +121,7 @@ async function guardarNuevoValor() {
     msg.style.color = '#27ae60';
     msg.textContent = '✅ Agregado';
     setTimeout(() => modalAgregarBS.hide(), 800);
-  } catch (e) {
-    msg.textContent = 'Error: ' + e.message;
-  }
+  } catch (e) { msg.textContent = 'Error: ' + e.message; }
 }
 
 // ============================================================
@@ -139,12 +135,15 @@ function toggleCausa() {
 
 function precargarUltimo(ult) {
   const v = ult.valores || {};
+  
+  // 1. Precargar Estatus y Datos Básicos
   document.getElementById('estatus').value = v.estatus || '';
   document.getElementById('abierta').value = v.abierta || '';
   document.getElementById('estatus-legal').value = v.estatus_legal || '';
   document.getElementById('observacion').value = v.observacion || '';
   document.getElementById('causa').value = v.causa || '';
 
+  // 2. Precargar Personal
   TIPOS.forEach(t => {
     SITUACIONES.forEach(s => {
       const el = document.getElementById(s + '-' + t);
@@ -154,10 +153,16 @@ function precargarUltimo(ult) {
     if (vac) vac.value = v['vacantes_' + t] || 0;
   });
 
-  document.getElementById('novedad-vehiculos').value = v.novedad_vehiculos || '';
-  document.getElementById('novedad-infraestructura').value = v.novedad_infraestructura || '';
-  document.getElementById('novedad-conectividad').value = v.novedad_conectividad || '';
+  // 3. Precargar Indicadores
+  const idsInd = ['IND-01', 'IND-03', 'IND-04', 'IND-05', 'IND-06', 'IND-07', 'IND-08', 'IND-09'];
+  idsInd.forEach(id => {
+    const el = document.getElementById('ind-' + id);
+    if (el && v[id]) el.value = v[id];
+  });
+
+  // 4. Novedades
   document.getElementById('observaciones').value = v.observaciones || '';
+  
   toggleCausa();
   calcularTotalRRHH();
 }
@@ -200,7 +205,6 @@ function calcularTotalRRHH() {
     granTotalVacantes += vacantesTipo;
   });
 
-  // Totales al pie
   SITUACIONES.forEach(s => {
     const el = document.getElementById('tot-' + s);
     if (el) el.textContent = totalesSituacion[s];
@@ -209,7 +213,6 @@ function calcularTotalRRHH() {
   document.getElementById('tot-vacantes').textContent = granTotalVacantes;
   document.getElementById('tot-total').textContent = granTotalActivos + granTotalVacantes;
 
-  // Bloque resumen
   document.getElementById('total-activos').textContent = granTotalActivos;
   document.getElementById('total-vacantes').textContent = granTotalVacantes;
   document.getElementById('total-rrhh').textContent = granTotalActivos + granTotalVacantes;
@@ -225,19 +228,26 @@ function recogerDatos() {
     estatus_legal: document.getElementById('estatus-legal').value,
     observacion: document.getElementById('observacion').value,
     causa: document.getElementById('causa').value.trim(),
-    novedad_vehiculos: document.getElementById('novedad-vehiculos').value.trim(),
-    novedad_infraestructura: document.getElementById('novedad-infraestructura').value.trim(),
-    novedad_conectividad: document.getElementById('novedad-conectividad').value.trim(),
     observaciones: document.getElementById('observaciones').value.trim()
   };
+
+  // Recoger Personal
   TIPOS.forEach(t => {
     SITUACIONES.forEach(s => {
       d[s + '_' + t] = num_(s + '-' + t);
     });
     d['vacantes_' + t] = num_('vacantes-' + t);
-    d['activos_' + t] = num_('activos-' + t).toString ? document.getElementById('activos-' + t).textContent : 0;
-    d['total_' + t] = document.getElementById('total-' + t).textContent;
+    d['activos_' + t] = parseInt(document.getElementById('activos-' + t).textContent, 10) || 0;
+    d['total_' + t] = parseInt(document.getElementById('total-' + t).textContent, 10) || 0;
   });
+
+  // Recoger Indicadores (Los 9 semáforos)
+  const idsInd = ['IND-01', 'IND-03', 'IND-04', 'IND-05', 'IND-06', 'IND-07', 'IND-08', 'IND-09'];
+  idsInd.forEach(id => {
+    const el = document.getElementById('ind-' + id);
+    if (el) d[id] = el.value;
+  });
+
   return d;
 }
 
@@ -252,10 +262,7 @@ function validar(d) {
 }
 
 async function enviarSinNovedades() {
-  if (!ULTIMO) {
-    alert('No hay reporte anterior para reutilizar');
-    return;
-  }
+  if (!ULTIMO) { alert('No hay reporte anterior para reutilizar'); return; }
   precargarUltimo(ULTIMO);
   document.getElementById('observaciones').value = 'Sin novedades respecto al reporte anterior';
   await enviarReporte();
@@ -302,9 +309,7 @@ function formatearFecha(f) {
 }
 
 async function cerrarSesion() {
-  try {
-    if (TOKEN) await api('logout', { token: TOKEN });
-  } catch (e) {}
+  try { if (TOKEN) await api('logout', { token: TOKEN }); } catch (e) {}
   localStorage.clear();
   sessionStorage.clear();
   location.href = 'index.html';
