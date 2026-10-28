@@ -402,8 +402,8 @@ window.guardarNovedadFila = async function(cedula, nombre) {
   try {
     const payload = {
       token: TOKEN,
-      idOpt: USUARIO.opt,
-      cedula: cedula,
+      idOpt: USUARIO.opt.trim(), // Aseguramos que no haya espacios
+      cedula: cedula.trim(),     // Aseguramos que no haya espacios
       nombre: nombre,
       motivoCodigo: motivoCodigo === 'ACTIVO' ? 'NOV-00' : motivoCodigo,
       fechaDesde: fechaDesde,
