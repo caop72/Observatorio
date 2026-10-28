@@ -127,8 +127,8 @@
         if (verJerarquia.indexOf(rol) !== -1) document.getElementById('nav-jerarquia').style.display = '';
         if (verCalendario.indexOf(rol) !== -1) document.getElementById('nav-calendario').style.display = '';
         
-        // Lógica para mostrar el código de la OPT si existe
-        var textoMenu = (U.nombres || '') + ' — ' + rol;
+        // Lógica para mostrar el nombre completo y el código de la OPT si existe
+        var textoMenu = (U.nombres || '') + ' ' + (U.apellidos || '') + ' — ' + rol;
         if (U.opt && U.opt.trim() !== '') {
           textoMenu += ' (' + U.opt.trim() + ')';
         }
