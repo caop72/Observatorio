@@ -65,6 +65,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   calcularTotalRRHH();
+  cargarPersonalYMotivos();
 });
 
 function llenarDropdown(idSelect, valores) {
@@ -349,4 +350,71 @@ async function cerrarSesion() {
   localStorage.clear();
   sessionStorage.clear();
   location.href = 'index.html';
+}
+
+// === LÓGICA DE NOVEDADES ===
+async function cargarPersonalYMotivos() {
+  const selEmp = document.getElementById('select-empleado');
+  const selMotivo = document.getElementById('motivo-novedad');
+  
+  try {
+    const rPersonal = await api('obtenerPersonalDeOpt', { idOpt: USUARIO.opt });
+    if (rPersonal.ok && rPersonal.personal) {
+      selEmp.innerHTML = '<option value="">Seleccione un empleado...</option>';
+      rPersonal.personal.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.cedula;
+        opt.textContent = `${p.cedula} - ${p.nombre} (${p.cargo}) [${p.estatus}]`;
+        opt.dataset.nombre = p.nombre;
+        selEmp.appendChild(opt);
+      });
+    }
+
+    const rMotivos = await api('obtenerMotivosNovedad', {});
+    if (rMotivos.ok && rMotivos.motivos) {
+      selMotivo.innerHTML = '<option value="">Seleccione motivo...</option>';
+      rMotivos.motivos.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.codigo;
+        opt.textContent = `${m.motivo} (${m.criticidad})`;
+        selMotivo.appendChild(opt);
+      });
+    }
+  } catch (e) { console.error(e); }
+}
+
+document.getElementById('select-empleado').addEventListener('change', function() {
+  document.getElementById('bloque-novedad').style.display = this.value ? '' : 'none';
+});
+
+async function guardarNovedad() {
+  const cedula = document.getElementById('select-empleado').value;
+  const motivoCodigo = document.getElementById('motivo-novedad').value;
+  const fechaDesde = document.getElementById('fecha-desde').value;
+  const fechaHasta = document.getElementById('fecha-hasta').value;
+  const obs = document.getElementById('obs-novedad').value;
+
+  if (!cedula || !motivoCodigo) { alert('Seleccione empleado y motivo'); return; }
+
+  const nombre = document.getElementById('select-empleado').selectedOptions[0].dataset.nombre;
+
+  const r = await api('registrarNovedad', {
+    token: TOKEN,
+    idOpt: USUARIO.opt,
+    cedula: cedula,
+    nombre: nombre,
+    motivoCodigo: motivoCodigo,
+    fechaDesde: fechaDesde,
+    fechaHasta: fechaHasta,
+    observacion: obs
+  });
+
+  if (r.ok) {
+    alert('✅ Novedad registrada: ' + r.idNovedad);
+    document.getElementById('select-empleado').value = '';
+    document.getElementById('bloque-novedad').style.display = 'none';
+    cargarPersonalYMotivos();
+  } else {
+    alert('❌ Error: ' + r.error);
+  }
 }
