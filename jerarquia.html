@@ -120,8 +120,15 @@
         if (verCalendario.indexOf(rol) !== -1) {
           document.getElementById('nav-calendario').style.display = '';
         }
-        document.getElementById('nav-usuario').textContent =
-          (U.nombres || '') + ' ' + (U.apellidos || '') + ' — ' + rol;
+                // Mostrar Nombre, Apellido, Cargo y OPT
+        var navUser = document.getElementById('nav-usuario');
+        if (navUser) {
+          var textoMenu = (U.nombres || '') + ' ' + (U.apellidos || '') + ' — ' + rol;
+          if (U.opt && U.opt.trim() !== '') {
+            textoMenu += ' (' + U.opt.trim() + ')';
+          }
+          navUser.textContent = textoMenu;
+        }
       } catch(e) {}
     })();
   </script>
