@@ -66,6 +66,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   calcularTotalRRHH();
   cargarPersonalYMotivos();
+
+  // Event listener para el select de empleados (DENTRO del DOMContentLoaded)
+  const selEmp = document.getElementById('select-empleado');
+  if (selEmp) {
+    selEmp.addEventListener('change', function() {
+      document.getElementById('bloque-novedad').style.display = this.value ? '' : 'none';
+    });
+  }
 });
 
 function llenarDropdown(idSelect, valores) {
@@ -352,11 +360,15 @@ async function cerrarSesion() {
   location.href = 'index.html';
 }
 
-// === LÓGICA DE NOVEDADES ===
+// ============================================================
+// LÓGICA DE NOVEDADES (PARTE HABLADO)
+// ============================================================
 async function cargarPersonalYMotivos() {
   const selEmp = document.getElementById('select-empleado');
   const selMotivo = document.getElementById('motivo-novedad');
   
+  if (!selEmp || !selMotivo) return; // Por si acaso no existen en el DOM
+
   try {
     const rPersonal = await api('obtenerPersonalDeOpt', { idOpt: USUARIO.opt });
     if (rPersonal.ok && rPersonal.personal) {
@@ -382,10 +394,6 @@ async function cargarPersonalYMotivos() {
     }
   } catch (e) { console.error(e); }
 }
-
-document.getElementById('select-empleado').addEventListener('change', function() {
-  document.getElementById('bloque-novedad').style.display = this.value ? '' : 'none';
-});
 
 async function guardarNovedad() {
   const cedula = document.getElementById('select-empleado').value;
