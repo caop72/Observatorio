@@ -1,6 +1,6 @@
 /**************************************************************
  * OEP - Módulo Jefe de OPT (Carga Diaria)
- * Versión limpia y corregida
+ * Versión 3: Tabla dinámica en Bloque 2 + Tabla interactiva en Bloque 5
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -38,7 +38,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   TOKEN = USUARIO.token;
 
   document.getElementById('nav-usuario').textContent =
-    (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
+    (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '') + (USUARIO.opt ? ` (${USUARIO.opt})` : '');
 
   const hoy = new Date();
   document.getElementById('fecha-hoy').textContent =
@@ -66,16 +66,9 @@ window.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    calcularTotalRRHH();
+    // Cargamos la tabla del Bloque 5 (que a su vez llena el Bloque 2)
     await cargarTablaPersonal();
 
-    // Event listener para el select de empleados
-    const selEmp = document.getElementById('select-empleado');
-    if (selEmp) {
-      selEmp.addEventListener('change', function() {
-        document.getElementById('bloque-novedad').style.display = this.value ? '' : 'none';
-      });
-    }
   } catch (error) {
     console.error("Error al inicializar:", error);
   }
@@ -184,15 +177,6 @@ function precargarUltimo(ult) {
   document.getElementById('causa-explicacion').value = v.causa_explicacion || '';
   document.getElementById('causa-accion').value = v.causa_accion || '';
 
-  TIPOS.forEach(t => {
-    SITUACIONES.forEach(s => {
-      const el = document.getElementById(s + '-' + t);
-      if (el) el.value = v[s + '_' + t] || 0;
-    });
-    const vac = document.getElementById('vacantes-' + t);
-    if (vac) vac.value = v['vacantes_' + t] || 0;
-  });
-
   const idsInd = ['IND-01', 'IND-03', 'IND-04', 'IND-05', 'IND-06', 'IND-07', 'IND-08', 'IND-09'];
   idsInd.forEach(id => {
     const el = document.getElementById('ind-' + id);
@@ -203,58 +187,11 @@ function precargarUltimo(ult) {
   
   toggleAbierta();
   toggleCausaOperativa();
-  calcularTotalRRHH();
 }
 
 function restaurarAnterior() {
   if (!ULTIMO) return;
   precargarUltimo(ULTIMO);
-}
-
-// ============================================================
-// CÁLCULOS EN VIVO
-// ============================================================
-function num_(id) {
-  const el = document.getElementById(id);
-  if (!el) return 0;
-  return parseInt(el.value, 10) || 0;
-}
-
-function calcularTotalRRHH() {
-  const totalesSituacion = {};
-  SITUACIONES.forEach(s => totalesSituacion[s] = 0);
-
-  let granTotalActivos = 0;
-  let granTotalVacantes = 0;
-
-  TIPOS.forEach(t => {
-    let activosTipo = 0;
-    SITUACIONES.forEach(s => {
-      const v = num_(s + '-' + t);
-      activosTipo += v;
-      totalesSituacion[s] += v;
-    });
-    const vacantesTipo = num_('vacantes-' + t);
-    const totalTipo = activosTipo + vacantesTipo;
-
-    document.getElementById('activos-' + t).textContent = activosTipo;
-    document.getElementById('total-' + t).textContent = totalTipo;
-
-    granTotalActivos += activosTipo;
-    granTotalVacantes += vacantesTipo;
-  });
-
-  SITUACIONES.forEach(s => {
-    const el = document.getElementById('tot-' + s);
-    if (el) el.textContent = totalesSituacion[s];
-  });
-  document.getElementById('tot-activos').textContent = granTotalActivos;
-  document.getElementById('tot-vacantes').textContent = granTotalVacantes;
-  document.getElementById('tot-total').textContent = granTotalActivos + granTotalVacantes;
-
-  document.getElementById('total-activos').textContent = granTotalActivos;
-  document.getElementById('total-vacantes').textContent = granTotalVacantes;
-  document.getElementById('total-rrhh').textContent = granTotalActivos + granTotalVacantes;
 }
 
 // ============================================================
@@ -276,14 +213,9 @@ function recogerDatos() {
     observaciones: document.getElementById('observaciones').value.trim()
   };
 
-  TIPOS.forEach(t => {
-    SITUACIONES.forEach(s => {
-      d[s + '_' + t] = num_(s + '-' + t);
-    });
-    d['vacantes_' + t] = num_('vacantes-' + t);
-    d['activos_' + t] = parseInt(document.getElementById('activos-' + t).textContent, 10) || 0;
-    d['total_' + t] = parseInt(document.getElementById('total-' + t).textContent, 10) || 0;
-  });
+  // Calcular totales automáticos para guardar en el reporte
+  d['total_personal'] = document.getElementById('total-rrhh').textContent;
+  d['total_activos'] = document.getElementById('total-activos').textContent;
 
   const idsInd = ['IND-01', 'IND-03', 'IND-04', 'IND-05', 'IND-06', 'IND-07', 'IND-08', 'IND-09'];
   idsInd.forEach(id => {
@@ -366,7 +298,7 @@ async function cerrarSesion() {
 }
 
 // ============================================================
-// LÓGICA DE NOVEDADES (TABLA INTERACTIVA)
+// LÓGICA DE NOVEDADES (BLOQUE 5 Y ACTUALIZACIÓN BLOQUE 2)
 // ============================================================
 async function cargarTablaPersonal() {
   const tbody = document.getElementById('tbody-novedades');
@@ -418,6 +350,7 @@ async function cargarTablaPersonal() {
       toggleFechas(p.cedula); 
     });
 
+    // Aquí actualizamos el Bloque 2 automáticamente
     actualizarParteNumericoDesdeNomina();
 
   } catch (e) { 
@@ -475,7 +408,7 @@ window.guardarNovedadFila = async function(cedula, nombre) {
     if (r.ok) {
       msgDiv.style.color = '#27ae60';
       msgDiv.textContent = '✅ Estatus actualizado correctamente.';
-      cargarTablaPersonal(); 
+      cargarTablaPersonal(); // Recargar actualiza la tabla y el Bloque 2
     } else {
       msgDiv.style.color = '#c0392b';
       msgDiv.textContent = '❌ Error: ' + r.error;
@@ -486,42 +419,102 @@ window.guardarNovedadFila = async function(cedula, nombre) {
   }
 };
 
+// ============================================================
+// ACTUALIZAR BLOQUE 2 DINÁMICAMENTE
+// ============================================================
 function actualizarParteNumericoDesdeNomina() {
-  const conteo = {
-    directivos: { presentes: 0, reposo: 0, comision: 0, permiso: 0, suspendido: 0 },
-    empleados: { presentes: 0, reposo: 0, comision: 0, permiso: 0, suspendido: 0 },
-    obreros: { presentes: 0, reposo: 0, comision: 0, permiso: 0, suspendido: 0 },
-    contratados: { presentes: 0, reposo: 0, comision: 0, permiso: 0, suspendido: 0 }
-  };
-
+  const categoriasExistentes = new Set();
+  const estatusExistentes = new Set(['ACTIVO']); 
+  
+  // 1. Identificar qué categorías y estatus hay en esta OPT
   PERSONAL_NOMINA.forEach(p => {
-    let tipo = 'empleados';
-    const cat = (p.categoria || '').toLowerCase();
-    if (cat.includes('directiv')) tipo = 'directivos';
-    else if (cat.includes('obrero')) tipo = 'obreros';
-    else if (cat.includes('contratad')) tipo = 'contratados';
+    let cat = (p.categoria || 'Empleados').trim();
+    if (cat.toLowerCase().includes('directiv')) cat = 'Directivos';
+    else if (cat.toLowerCase().includes('obrero')) cat = 'Obreros';
+    else if (cat.toLowerCase().includes('contratad')) cat = 'Contratados';
+    else cat = 'Empleados';
+    categoriasExistentes.add(cat);
 
     const est = (p.estatus || 'ACTIVO').toUpperCase();
-    
-    if (est === 'ACTIVO' || est === 'DISPONIBLE') {
-      conteo[tipo].presentes++;
-    } else if (est.includes('NOV-01') || est.includes('REPOSO')) {
-      conteo[tipo].reposo++;
-    } else if (est.includes('NOV-06') || est.includes('COMISION')) {
-      conteo[tipo].comision++;
-    } else if (est.includes('NOV-05') || est.includes('NOV-07') || est.includes('PERMISO') || est.includes('VACACIONES')) {
-      conteo[tipo].permiso++;
-    } else if (est.includes('NOV-10') || est.includes('SUSPENDIDO')) {
-      conteo[tipo].suspendido++;
+    if (est !== 'ACTIVO' && est !== 'DISPONIBLE') {
+      const selectEmp = document.getElementById(`sel-estatus-${p.cedula}`);
+      if (selectEmp) {
+        const textoOpcion = selectEmp.options[selectEmp.selectedIndex].text;
+        let nombreEstatus = textoOpcion.split('(')[0].trim(); 
+        estatusExistentes.add(nombreEstatus);
+      } else {
+        estatusExistentes.add('Otras Novedades');
+      }
     }
   });
 
-  TIPOS.forEach(t => {
-    SITUACIONES.forEach(s => {
-      const el = document.getElementById(`${s}-${t}`);
-      if (el) el.value = conteo[t][s];
-    });
+  // 2. Armar la cabecera de la tabla (solo con los estatus que existen)
+  const listaEstatus = Array.from(estatusExistentes).sort((a, b) => {
+    if (a === 'ACTIVO') return -1;
+    return a.localeCompare(b);
   });
 
-  calcularTotalRRHH();
+  const thead = document.getElementById('thead-resumen');
+  if (!thead) return;
+  
+  let htmlHead = `<tr><th>Tipo de Personal</th>`;
+  listaEstatus.forEach(est => {
+    htmlHead += `<th class="text-center">${est === 'ACTIVO' ? 'Presentes' : est}</th>`;
+  });
+  htmlHead += `<th class="text-center">Total</th></tr>`;
+  thead.innerHTML = htmlHead;
+
+  // 3. Calcular los datos por categoría
+  const conteo = {};
+  categoriasExistentes.forEach(cat => {
+    conteo[cat] = {};
+    listaEstatus.forEach(est => conteo[cat][est] = 0);
+    conteo[cat]['TOTAL'] = 0;
+  });
+
+  PERSONAL_NOMINA.forEach(p => {
+    let cat = (p.categoria || 'Empleados').trim();
+    if (cat.toLowerCase().includes('directiv')) cat = 'Directivos';
+    else if (cat.toLowerCase().includes('obrero')) cat = 'Obreros';
+    else if (cat.toLowerCase().includes('contratad')) cat = 'Contratados';
+    else cat = 'Empleados';
+
+    let columnaEstatus = 'ACTIVO';
+    const est = (p.estatus || 'ACTIVO').toUpperCase();
+    if (est !== 'ACTIVO' && est !== 'DISPONIBLE') {
+      const selectEmp = document.getElementById(`sel-estatus-${p.cedula}`);
+      if (selectEmp) {
+        columnaEstatus = selectEmp.options[selectEmp.selectedIndex].text.split('(')[0].trim();
+      }
+    }
+
+    conteo[cat][columnaEstatus]++;
+    conteo[cat]['TOTAL']++;
+  });
+
+  // 4. Armar el cuerpo de la tabla
+  const tbody = document.getElementById('tbody-resumen');
+  if (!tbody) return;
+
+  let htmlBody = '';
+  let totalGlobal = 0;
+  let totalPresentes = 0;
+
+  Object.keys(conteo).sort().forEach(cat => {
+    htmlBody += `<tr><td><strong>${cat}</strong></td>`;
+    listaEstatus.forEach(est => {
+      const cant = conteo[cat][est];
+      htmlBody += `<td class="text-center">${cant > 0 ? cant : '-'}</td>`;
+      if (est === 'ACTIVO') totalPresentes += cant;
+    });
+    htmlBody += `<td class="text-center bg-light"><strong>${conteo[cat]['TOTAL']}</strong></td></tr>`;
+    totalGlobal += conteo[cat]['TOTAL'];
+  });
+
+  tbody.innerHTML = htmlBody;
+
+  // 5. Actualizar los totales globales
+  document.getElementById('total-rrhh').textContent = totalGlobal;
+  document.getElementById('total-activos').textContent = totalPresentes;
+  document.getElementById('total-vacantes').textContent = 0;
 }
