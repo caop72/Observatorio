@@ -119,7 +119,7 @@
     
   </div>
 
-  <script src="estadisticas.js?v=20"></script>
+    <script src="estadisticas.js?v=20"></script>
   <script>
     (function(){
       try {
@@ -128,8 +128,21 @@
         var rol = (U.rol || U.cargo || '').toString();
         var verJ = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado','Jefe de OPT'];
         var verF = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado'];
+        
         if (verJ.indexOf(rol) !== -1) document.getElementById('nav-jerarquia').style.display = '';
         if (verF.indexOf(rol) !== -1) document.getElementById('nav-filtros').style.display = '';
+        
+        // --- AGREGAR ESTO PARA MOSTRAR EL NOMBRE Y LA OPT ---
+        var navUser = document.getElementById('nav-usuario');
+        if (navUser) {
+          var textoMenu = (U.nombres || '') + ' — ' + rol;
+          if (U.opt && U.opt.trim() !== '') {
+            textoMenu += ' (' + U.opt.trim() + ')';
+          }
+          navUser.textContent = textoMenu;
+        }
+        // ----------------------------------------------------
+        
       } catch(e) {}
     })();
   </script>
