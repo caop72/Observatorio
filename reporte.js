@@ -377,11 +377,15 @@ window.toggleFechas = function(cedula) {
 };
 
 window.guardarNovedadFila = async function(cedula, nombre) {
-  const motivoCodigo = document.getElementById(`sel-estatus-${cedula}`).value;
+  // 1. Capturamos correctamente el valor del selector (el código NOV-XX)
+  const selectElement = document.getElementById(`sel-estatus-${cedula}`);
+  const motivoCodigo = selectElement.value; 
+  
   const fechaDesde = document.getElementById(`fecha-desde-${cedula}`).value;
   const fechaHasta = document.getElementById(`fecha-hasta-${cedula}`).value;
   const msgDiv = document.getElementById('msg-novedad');
 
+  // Validación de fechas
   if (motivoCodigo !== 'ACTIVO' && (!fechaDesde || !fechaHasta)) {
     msgDiv.style.color = '#c0392b';
     msgDiv.textContent = 'Debe indicar la fecha Desde y Hasta para el estatus seleccionado.';
@@ -397,18 +401,21 @@ window.guardarNovedadFila = async function(cedula, nombre) {
       idOpt: USUARIO.opt,
       cedula: cedula,
       nombre: nombre,
+      // Enviamos el código correcto (si es ACTIVO, mandamos NOV-00)
       motivoCodigo: motivoCodigo === 'ACTIVO' ? 'NOV-00' : motivoCodigo,
       fechaDesde: fechaDesde,
       fechaHasta: fechaHasta,
       observacion: ''
     };
 
+    console.log("Enviando al backend:", payload); // Para verificar en consola
+
     const r = await api('registrarNovedad', payload);
 
     if (r.ok) {
       msgDiv.style.color = '#27ae60';
       msgDiv.textContent = '✅ Estatus actualizado correctamente.';
-      cargarTablaPersonal(); // Recargar actualiza la tabla y el Bloque 2
+      cargarTablaPersonal(); // Recarga la tabla
     } else {
       msgDiv.style.color = '#c0392b';
       msgDiv.textContent = '❌ Error: ' + r.error;
@@ -418,7 +425,6 @@ window.guardarNovedadFila = async function(cedula, nombre) {
     msgDiv.textContent = '❌ Error de conexión: ' + e.message;
   }
 };
-
 // ============================================================
 // ACTUALIZAR BLOQUE 2 DINÁMICAMENTE
 // ============================================================
