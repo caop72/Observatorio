@@ -1,6 +1,6 @@
 /**************************************************************
- * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v12
- * Lógica condicional Activa/Inactiva y Operativa/Inoperativa
+ * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v13
+ * Lógica de Tabla Interactiva de Personal (Parte Hablado)
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -12,6 +12,7 @@ let CATALOGOS = {};
 let modalAgregarBS = null;
 let categoriaActual = '';
 let selectActualId = '';
+let PERSONAL_NOMINA = []; // Variable global para la tabla de novedades
 
 const TIPOS = ['directivos','empleados','obreros','contratados'];
 const SITUACIONES = ['presentes','reposo','comision','permiso','suspendido'];
@@ -65,15 +66,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   calcularTotalRRHH();
-  cargarPersonalYMotivos();
-
-  // Event listener para el select de empleados (DENTRO del DOMContentLoaded)
-  const selEmp = document.getElementById('select-empleado');
-  if (selEmp) {
-    selEmp.addEventListener('change', function() {
-      document.getElementById('bloque-novedad').style.display = this.value ? '' : 'none';
-    });
-  }
+  cargarTablaPersonal(); // Carga la tabla de novedades
 });
 
 function llenarDropdown(idSelect, valores) {
@@ -361,68 +354,162 @@ async function cerrarSesion() {
 }
 
 // ============================================================
-// LÓGICA DE NOVEDADES (PARTE HABLADO)
+// LÓGICA DE NOVEDADES (TABLA INTERACTIVA)
 // ============================================================
-async function cargarPersonalYMotivos() {
-  const selEmp = document.getElementById('select-empleado');
-  const selMotivo = document.getElementById('motivo-novedad');
-  
-  if (!selEmp || !selMotivo) return; // Por si acaso no existen en el DOM
+async function cargarTablaPersonal() {
+  const tbody = document.getElementById('tbody-novedades');
+  if (!tbody) return;
 
   try {
     const rPersonal = await api('obtenerPersonalDeOpt', { idOpt: USUARIO.opt });
-    if (rPersonal.ok && rPersonal.personal) {
-      selEmp.innerHTML = '<option value="">Seleccione un empleado...</option>';
-      rPersonal.personal.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.cedula;
-        opt.textContent = `${p.cedula} - ${p.nombre} (${p.cargo}) [${p.estatus}]`;
-        opt.dataset.nombre = p.nombre;
-        selEmp.appendChild(opt);
-      });
-    }
+    if (!rPersonal.ok || !rPersonal.personal) throw new Error("No se pudo cargar el personal");
+    
+    PERSONAL_NOMINA = rPersonal.personal;
 
     const rMotivos = await api('obtenerMotivosNovedad', {});
+    let opcionesMotivos = '<option value="ACTIVO">ACTIVO (Disponible)</option>';
     if (rMotivos.ok && rMotivos.motivos) {
-      selMotivo.innerHTML = '<option value="">Seleccione motivo...</option>';
       rMotivos.motivos.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m.codigo;
-        opt.textContent = `${m.motivo} (${m.criticidad})`;
-        selMotivo.appendChild(opt);
+        opcionesMotivos += `<option value="${m.codigo}">${m.motivo}</option>`;
       });
     }
-  } catch (e) { console.error(e); }
+
+    tbody.innerHTML = '';
+    if (PERSONAL_NOMINA.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay personal registrado en esta OPT.</td></tr>';
+      return;
+    }
+
+    PERSONAL_NOMINA.forEach((p) => {
+      const tr = document.createElement('tr');
+      tr.id = `fila-emp-${p.cedula}`;
+      
+      const estaActivo = p.estatus === 'ACTIVO';
+      
+      tr.innerHTML = `
+        <td>${p.cedula}</td>
+        <td>${p.nombre}</td>
+        <td>${p.cargo}</td>
+        <td class="text-center"><span class="badge ${estaActivo ? 'bg-success' : 'bg-warning text-dark'}">${p.estatus}</span></td>
+        <td>
+          <select id="sel-estatus-${p.cedula}" class="form-select form-select-sm" onchange="toggleFechas('${p.cedula}')">
+             ${opcionesMotivos}
+          </select>
+        </td>
+        <td><input type="date" id="fecha-desde-${p.cedula}" class="form-control form-control-sm" disabled></td>
+        <td><input type="date" id="fecha-hasta-${p.cedula}" class="form-control form-control-sm" disabled></td>
+        <td><button class="btn btn-sm btn-primary" onclick="guardarNovedadFila('${p.cedula}', '${p.nombre}')">💾 Guardar</button></td>
+      `;
+      tbody.appendChild(tr);
+      
+      document.getElementById(`sel-estatus-${p.cedula}`).value = estaActivo ? 'ACTIVO' : p.estatus;
+      toggleFechas(p.cedula); 
+    });
+
+    actualizarParteNumericoDesdeNomina();
+
+  } catch (e) { 
+    console.error(e); 
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error: ${e.message}</td></tr>`;
+  }
 }
 
-async function guardarNovedad() {
-  const cedula = document.getElementById('select-empleado').value;
-  const motivoCodigo = document.getElementById('motivo-novedad').value;
-  const fechaDesde = document.getElementById('fecha-desde').value;
-  const fechaHasta = document.getElementById('fecha-hasta').value;
-  const obs = document.getElementById('obs-novedad').value;
+window.toggleFechas = function(cedula) {
+  const select = document.getElementById(`sel-estatus-${cedula}`);
+  const fechaDesde = document.getElementById(`fecha-desde-${cedula}`);
+  const fechaHasta = document.getElementById(`fecha-hasta-${cedula}`);
+  
+  if (select.value === 'ACTIVO') {
+    fechaDesde.disabled = true;
+    fechaHasta.disabled = true;
+    fechaDesde.value = '';
+    fechaHasta.value = '';
+  } else {
+    fechaDesde.disabled = false;
+    fechaHasta.disabled = false;
+    if (!fechaDesde.value) fechaDesde.value = new Date().toISOString().split('T')[0];
+  }
+};
 
-  if (!cedula || !motivoCodigo) { alert('Seleccione empleado y motivo'); return; }
+window.guardarNovedadFila = async function(cedula, nombre) {
+  const motivoCodigo = document.getElementById(`sel-estatus-${cedula}`).value;
+  const fechaDesde = document.getElementById(`fecha-desde-${cedula}`).value;
+  const fechaHasta = document.getElementById(`fecha-hasta-${cedula}`).value;
+  const msgDiv = document.getElementById('msg-novedad');
 
-  const nombre = document.getElementById('select-empleado').selectedOptions[0].dataset.nombre;
+  if (motivoCodigo !== 'ACTIVO' && (!fechaDesde || !fechaHasta)) {
+    msgDiv.style.color = '#c0392b';
+    msgDiv.textContent = 'Debe indicar la fecha Desde y Hasta para el estatus seleccionado.';
+    return;
+  }
 
-  const r = await api('registrarNovedad', {
-    token: TOKEN,
-    idOpt: USUARIO.opt,
-    cedula: cedula,
-    nombre: nombre,
-    motivoCodigo: motivoCodigo,
-    fechaDesde: fechaDesde,
-    fechaHasta: fechaHasta,
-    observacion: obs
+  msgDiv.style.color = '#1a3d7c';
+  msgDiv.textContent = 'Guardando...';
+
+  try {
+    const payload = {
+      token: TOKEN,
+      idOpt: USUARIO.opt,
+      cedula: cedula,
+      nombre: nombre,
+      motivoCodigo: motivoCodigo === 'ACTIVO' ? 'NOV-00' : motivoCodigo,
+      fechaDesde: fechaDesde,
+      fechaHasta: fechaHasta,
+      observacion: ''
+    };
+
+    const r = await api('registrarNovedad', payload);
+
+    if (r.ok) {
+      msgDiv.style.color = '#27ae60';
+      msgDiv.textContent = '✅ Estatus actualizado correctamente.';
+      cargarTablaPersonal(); 
+    } else {
+      msgDiv.style.color = '#c0392b';
+      msgDiv.textContent = '❌ Error: ' + r.error;
+    }
+  } catch (e) {
+    msgDiv.style.color = '#c0392b';
+    msgDiv.textContent = '❌ Error de conexión: ' + e.message;
+  }
+};
+
+function actualizarParteNumericoDesdeNomina() {
+  const conteo = {
+    directivos: { presentes: 0, reposo: 0, comision: 0, permiso: 0, suspendido: 0 },
+    empleados: { presentes: 0, reposo: 0, comision: 0, permiso: 0, suspendido: 0 },
+    obreros: { presentes: 0, reposo: 0, comision: 0, permiso: 0, suspendido: 0 },
+    contratados: { presentes: 0, reposo: 0, comision: 0, permiso: 0, suspendido: 0 }
+  };
+
+  PERSONAL_NOMINA.forEach(p => {
+    let tipo = 'empleados';
+    const cat = (p.categoria || '').toLowerCase();
+    if (cat.includes('directiv')) tipo = 'directivos';
+    else if (cat.includes('obrero')) tipo = 'obreros';
+    else if (cat.includes('contratad')) tipo = 'contratados';
+
+    const est = (p.estatus || 'ACTIVO').toUpperCase();
+    
+    if (est === 'ACTIVO' || est === 'DISPONIBLE') {
+      conteo[tipo].presentes++;
+    } else if (est.includes('NOV-01') || est.includes('REPOSO')) {
+      conteo[tipo].reposo++;
+    } else if (est.includes('NOV-06') || est.includes('COMISION')) {
+      conteo[tipo].comision++;
+    } else if (est.includes('NOV-05') || est.includes('NOV-07') || est.includes('PERMISO') || est.includes('VACACIONES')) {
+      conteo[tipo].permiso++;
+    } else if (est.includes('NOV-10') || est.includes('SUSPENDIDO')) {
+      conteo[tipo].suspendido++;
+    }
   });
 
-  if (r.ok) {
-    alert('✅ Novedad registrada: ' + r.idNovedad);
-    document.getElementById('select-empleado').value = '';
-    document.getElementById('bloque-novedad').style.display = 'none';
-    cargarPersonalYMotivos();
-  } else {
-    alert('❌ Error: ' + r.error);
-  }
+  TIPOS.forEach(t => {
+    SITUACIONES.forEach(s => {
+      const el = document.getElementById(`${s}-${t}`);
+      if (el) el.value = conteo[t][s];
+    });
+  });
+
+  calcularTotalRRHH();
 }
