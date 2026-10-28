@@ -361,7 +361,11 @@ async function cargarTablaPersonal() {
   if (!tbody) return;
 
   try {
+     try {
+    console.log("Buscando personal para la OPT:", USUARIO.opt); // <-- Agrega esto
     const rPersonal = await api('obtenerPersonalDeOpt', { idOpt: USUARIO.opt });
+    console.log("Respuesta del servidor:", rPersonal); // <-- Y esto
+  
     if (!rPersonal.ok || !rPersonal.personal) throw new Error("No se pudo cargar el personal");
     
     PERSONAL_NOMINA = rPersonal.personal;
