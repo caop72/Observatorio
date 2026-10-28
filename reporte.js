@@ -355,21 +355,18 @@ async function cerrarSesion() {
 
 // ============================================================
 // LÓGICA DE NOVEDADES (TABLA INTERACTIVA)
-// ============================================================
-async function cargarTablaPersonal() {
+// ============================================================async function cargarTablaPersonal() {
   const tbody = document.getElementById('tbody-novedades');
   if (!tbody) return;
 
   try {
-     try {
-    console.log("Buscando personal para la OPT:", USUARIO.opt); // <-- Agrega esto
+    // 1. Cargar Personal de la OPT
     const rPersonal = await api('obtenerPersonalDeOpt', { idOpt: USUARIO.opt });
-    console.log("Respuesta del servidor:", rPersonal); // <-- Y esto
-  
     if (!rPersonal.ok || !rPersonal.personal) throw new Error("No se pudo cargar el personal");
     
     PERSONAL_NOMINA = rPersonal.personal;
 
+    // 2. Cargar Motivos
     const rMotivos = await api('obtenerMotivosNovedad', {});
     let opcionesMotivos = '<option value="ACTIVO">ACTIVO (Disponible)</option>';
     if (rMotivos.ok && rMotivos.motivos) {
@@ -378,6 +375,7 @@ async function cargarTablaPersonal() {
       });
     }
 
+    // 3. Dibujar la tabla
     tbody.innerHTML = '';
     if (PERSONAL_NOMINA.length === 0) {
       tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay personal registrado en esta OPT.</td></tr>';
