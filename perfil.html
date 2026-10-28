@@ -116,8 +116,6 @@
     </div>
 
   </div>
-
-  <script src="perfil.js?v=11"></script>
   <script>
     (function(){
       try {
@@ -128,9 +126,17 @@
         var verCalendario = ['Observatorio','CNC'];
         if (verJerarquia.indexOf(rol) !== -1) document.getElementById('nav-jerarquia').style.display = '';
         if (verCalendario.indexOf(rol) !== -1) document.getElementById('nav-calendario').style.display = '';
-        document.getElementById('nav-usuario').textContent = (U.nombres || '') + ' — ' + rol;
+        
+        // Lógica para mostrar el código de la OPT si existe
+        var textoMenu = (U.nombres || '') + ' — ' + rol;
+        if (U.opt && U.opt.trim() !== '') {
+          textoMenu += ' (' + U.opt.trim() + ')';
+        }
+        document.getElementById('nav-usuario').textContent = textoMenu;
+        
       } catch(e) {}
     })();
   </script>
+  
 </body>
 </html>
