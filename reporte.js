@@ -1,6 +1,6 @@
 /**************************************************************
- * OEP - Módulo Jefe de OPT (Carga Diaria) — Modelo v13
- * Lógica de Tabla Interactiva de Personal (Parte Hablado)
+ * OEP - Módulo Jefe de OPT (Carga Diaria)
+ * Versión limpia y corregida
  **************************************************************/
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzn4bcq0uYlNnunsv8ePtzIzaHI606CjgXunrOVClZ29pYhXP5CcFPAUck7O0V31CeJOQ/exec';
@@ -12,7 +12,7 @@ let CATALOGOS = {};
 let modalAgregarBS = null;
 let categoriaActual = '';
 let selectActualId = '';
-let PERSONAL_NOMINA = []; // Variable global para la tabla de novedades
+let PERSONAL_NOMINA = [];
 
 const TIPOS = ['directivos','empleados','obreros','contratados'];
 const SITUACIONES = ['presentes','reposo','comision','permiso','suspendido'];
@@ -44,29 +44,41 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('fecha-hoy').textContent =
     hoy.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-  const rCat = await api('obtenerCatalogos');
-  if (rCat.ok) {
-    CATALOGOS = rCat.catalogos || {};
-    llenarDropdown('abierta', CATALOGOS.SI_NO || ['SI', 'NO']);
-    llenarDropdown('estatus-legal', CATALOGOS.ESTATUS_LEGAL || []);
-    llenarDropdown('observacion', CATALOGOS.OBSERVACIONES || []);
-  }
-
-  modalAgregarBS = new bootstrap.Modal(document.getElementById('modalAgregar'));
-
-  const idOpt = USUARIO.opt || '';
-  if (idOpt) {
-    const r = await api('obtenerUltimoReporte', { idOpt });
-    if (r.ok && r.ultimo) {
-      ULTIMO = r.ultimo;
-      precargarUltimo(r.ultimo);
-      document.getElementById('banner-precarga').classList.remove('d-none');
-      document.getElementById('banner-fecha').textContent = formatearFecha(r.ultimo.fecha);
+  try {
+    const rCat = await api('obtenerCatalogos');
+    if (rCat.ok) {
+      CATALOGOS = rCat.catalogos || {};
+      llenarDropdown('abierta', CATALOGOS.SI_NO || ['SI', 'NO']);
+      llenarDropdown('estatus-legal', CATALOGOS.ESTATUS_LEGAL || []);
+      llenarDropdown('observacion', CATALOGOS.OBSERVACIONES || []);
     }
-  }
 
-  calcularTotalRRHH();
-  cargarTablaPersonal(); // Carga la tabla de novedades
+    modalAgregarBS = new bootstrap.Modal(document.getElementById('modalAgregar'));
+
+    const idOpt = USUARIO.opt || '';
+    if (idOpt) {
+      const r = await api('obtenerUltimoReporte', { idOpt });
+      if (r.ok && r.ultimo) {
+        ULTIMO = r.ultimo;
+        precargarUltimo(r.ultimo);
+        document.getElementById('banner-precarga').classList.remove('d-none');
+        document.getElementById('banner-fecha').textContent = formatearFecha(r.ultimo.fecha);
+      }
+    }
+
+    calcularTotalRRHH();
+    await cargarTablaPersonal();
+
+    // Event listener para el select de empleados
+    const selEmp = document.getElementById('select-empleado');
+    if (selEmp) {
+      selEmp.addEventListener('change', function() {
+        document.getElementById('bloque-novedad').style.display = this.value ? '' : 'none';
+      });
+    }
+  } catch (error) {
+    console.error("Error al inicializar:", error);
+  }
 });
 
 function llenarDropdown(idSelect, valores) {
@@ -355,18 +367,17 @@ async function cerrarSesion() {
 
 // ============================================================
 // LÓGICA DE NOVEDADES (TABLA INTERACTIVA)
-// ============================================================async function cargarTablaPersonal() {
+// ============================================================
+async function cargarTablaPersonal() {
   const tbody = document.getElementById('tbody-novedades');
   if (!tbody) return;
 
   try {
-    // 1. Cargar Personal de la OPT
     const rPersonal = await api('obtenerPersonalDeOpt', { idOpt: USUARIO.opt });
     if (!rPersonal.ok || !rPersonal.personal) throw new Error("No se pudo cargar el personal");
     
     PERSONAL_NOMINA = rPersonal.personal;
 
-    // 2. Cargar Motivos
     const rMotivos = await api('obtenerMotivosNovedad', {});
     let opcionesMotivos = '<option value="ACTIVO">ACTIVO (Disponible)</option>';
     if (rMotivos.ok && rMotivos.motivos) {
@@ -375,7 +386,6 @@ async function cerrarSesion() {
       });
     }
 
-    // 3. Dibujar la tabla
     tbody.innerHTML = '';
     if (PERSONAL_NOMINA.length === 0) {
       tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay personal registrado en esta OPT.</td></tr>';
