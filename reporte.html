@@ -36,7 +36,7 @@
     <div id="form-reporte">
       <h4 class="mb-3 text-white">Reporte del <span id="fecha-hoy"></span></h4>
 
-                  <!-- BLOQUE 1: ESTATUS DEL DÍA -->
+      <!-- BLOQUE 1: ESTATUS DEL DÍA -->
       <div class="card mb-3 shadow-sm">
         <div class="card-header bg-secondary text-white"><strong>1. Estatus de la Oficina</strong></div>
         <div class="card-body">
@@ -260,6 +260,46 @@
         </div>
       </div>
 
+      <!-- BLOQUE 5: NOVEDADES DE PERSONAL -->
+      <div class="card mb-3 shadow-sm">
+        <div class="card-header bg-warning text-dark"><strong>5. Novedades de Personal (Parte Hablado)</strong></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Seleccione un empleado para reportar novedad:</label>
+            <select id="select-empleado" class="form-select mb-2">
+              <option value="">Cargando personal...</option>
+            </select>
+          </div>
+
+          <div id="bloque-novedad" style="display:none;">
+            <div class="row g-2 mb-2">
+              <div class="col-md-6">
+                <label class="form-label">Motivo de la Novedad *</label>
+                <select id="motivo-novedad" class="form-select"></select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Desde *</label>
+                <input type="date" id="fecha-desde" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Hasta *</label>
+                <input type="date" id="fecha-hasta" class="form-control">
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Observación (opcional)</label>
+              <input type="text" id="obs-novedad" class="form-control" placeholder="Ej: Operación de rodilla">
+            </div>
+            <button type="button" class="btn btn-warning" onclick="guardarNovedad()">Registrar Novedad</button>
+          </div>
+
+          <hr>
+          <h6>Novedades registradas hoy:</h6>
+          <ul id="lista-novedades" class="list-group"></ul>
+        </div>
+      </div>
+
+      <!-- BOTONES DE ENVÍO -->
       <div class="d-flex gap-2">
         <button class="btn btn-secondary" onclick="enviarSinNovedades()">📋 Sin novedades</button>
         <button class="btn btn-primary flex-grow-1" onclick="enviarReporte()">✅ Enviar reporte</button>
