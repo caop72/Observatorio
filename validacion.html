@@ -42,7 +42,7 @@
   </div>
 
   <script src="validacion.js"></script>
-  <script>
+    <script>
     (function(){
       try {
         var U = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
@@ -51,6 +51,7 @@
         var verJerarquia = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado','Jefe de OPT'];
         var verCalendario = ['Observatorio','CNC'];
         var verFiltros = ['Presidencia','Despacho','Observatorio','CNC','Gerente de Región','Gerente de Estado'];
+        
         if (verFiltros.indexOf(rol) !== -1) {
           document.getElementById('nav-filtros').style.display = '';
         }
@@ -60,6 +61,17 @@
         if (verCalendario.indexOf(rol) !== -1) {
           document.getElementById('nav-calendario').style.display = '';
         }
+        
+        // --- Mostrar Nombre, Apellido, Cargo y OPT ---
+        var navUser = document.getElementById('nav-usuario');
+        if (navUser) {
+          var textoMenu = (U.nombres || '') + ' ' + (U.apellidos || '') + ' — ' + rol;
+          if (U.opt && U.opt.trim() !== '') {
+            textoMenu += ' (' + U.opt.trim() + ')';
+          }
+          navUser.textContent = textoMenu;
+        }
+        
       } catch(e) {}
     })();
   </script>
