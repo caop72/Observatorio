@@ -134,6 +134,25 @@
 
   </div>
 
-  <script src="filtros.js?v=1"></script>
+   <script src="filtros.js?v=1"></script>
+  <script>
+    (function(){
+      try {
+        var U = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
+        if (!U) return;
+        var rol = (U.rol || U.cargo || '').toString();
+        
+        // Mostrar Nombre, Apellido, Cargo y OPT
+        var navUser = document.getElementById('nav-usuario');
+        if (navUser) {
+          var textoMenu = (U.nombres || '') + ' ' + (U.apellidos || '') + ' — ' + rol;
+          if (U.opt && U.opt.trim() !== '') {
+            textoMenu += ' (' + U.opt.trim() + ')';
+          }
+          navUser.textContent = textoMenu;
+        }
+      } catch(e) {}
+    })();
+  </script>
 </body>
 </html>
