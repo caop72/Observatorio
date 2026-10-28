@@ -377,13 +377,17 @@ window.toggleFechas = function(cedula) {
 };
 
 window.guardarNovedadFila = async function(cedula, nombre) {
-  // 1. Capturamos correctamente el valor del selector (el código NOV-XX)
+  // 1. Capturamos los elementos del DOM
   const selectElement = document.getElementById(`sel-estatus-${cedula}`);
-  const motivoCodigo = selectElement.value; 
-  
-  const fechaDesde = document.getElementById(`fecha-desde-${cedula}`).value;
-  const fechaHasta = document.getElementById(`fecha-hasta-${cedula}`).value;
+  const inputDesde = document.getElementById(`fecha-desde-${cedula}`);
+  const inputHasta = document.getElementById(`fecha-hasta-${cedula}`);
   const msgDiv = document.getElementById('msg-novedad');
+
+  // 2. Extraemos los valores asegurándonos de que sean los correctos
+  // El motivo SIEMPRE debe venir del select, no de los inputs de fecha
+  const motivoCodigo = selectElement.value; 
+  const fechaDesde = inputDesde.value;
+  const fechaHasta = inputHasta.value;
 
   // Validación de fechas
   if (motivoCodigo !== 'ACTIVO' && (!fechaDesde || !fechaHasta)) {
@@ -401,21 +405,20 @@ window.guardarNovedadFila = async function(cedula, nombre) {
       idOpt: USUARIO.opt,
       cedula: cedula,
       nombre: nombre,
-      // Enviamos el código correcto (si es ACTIVO, mandamos NOV-00)
       motivoCodigo: motivoCodigo === 'ACTIVO' ? 'NOV-00' : motivoCodigo,
       fechaDesde: fechaDesde,
       fechaHasta: fechaHasta,
       observacion: ''
     };
 
-    console.log("Enviando al backend:", payload); // Para verificar en consola
+    console.log("Enviando al backend:", payload); // Esto nos ayudará a ver qué se envía
 
     const r = await api('registrarNovedad', payload);
 
     if (r.ok) {
       msgDiv.style.color = '#27ae60';
       msgDiv.textContent = '✅ Estatus actualizado correctamente.';
-      cargarTablaPersonal(); // Recarga la tabla
+      cargarTablaPersonal(); // Recarga la tabla y actualiza el bloque 2
     } else {
       msgDiv.style.color = '#c0392b';
       msgDiv.textContent = '❌ Error: ' + r.error;
