@@ -154,9 +154,50 @@
     <div id="organigrama-container" class="zona-organigrama d-none">
       <div class="tree" id="tree-root"></div>
     </div>
+   </div>
+
+  <!-- Modal para Crear Dependencia -->
+  <div class="modal fade" id="modalCrear" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header" style="background:#1a3d7c; color:white;">
+          <h5 class="modal-title">➕ Crear Nueva Dependencia</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">ID (Código único, ej. GER-NUEVA):</label>
+            <input type="text" id="nuevoId" class="form-control" placeholder="GER-NUEVA">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Nombre:</label>
+            <input type="text" id="nuevoNombre" class="form-control" placeholder="Gerencia de Innovación">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Nivel:</label>
+            <select id="nuevoNivel" class="form-select">
+              <option value="DIRECCION">Dirección</option>
+              <option value="GERENCIA">Gerencia</option>
+              <option value="DIVISION">División</option>
+              <option value="OPT">Oficina Postal (OPT)</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">ID del Padre (opcional, vacío = raíz):</label>
+            <input type="text" id="nuevoPadre" class="form-control" placeholder="PRESIDENCIA">
+          </div>
+          <div id="msgCrear" class="text-danger mt-2"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarNuevaDependencia()">Guardar</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="organigrama.js"></script>
 </body>
 </html>
+
