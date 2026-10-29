@@ -20,7 +20,7 @@
     }
     
     /* =========================================
-       ESTILOS DE DIAGRAMA DE FLUJO
+       ESTILOS DE DIAGRAMA DE FLUJO (ÁRBOL)
        ========================================= */
     .tree ul {
       padding-top: 20px; 
@@ -67,7 +67,7 @@
       width: 0; height: 20px;
     }
 
-    /* Tarjetas de Nodos (CORREGIDAS) */
+    /* Tarjetas de Nodos (Forzando visibilidad) */
     .nodo-card {
       display: inline-block;
       padding: 10px 15px;
@@ -77,22 +77,22 @@
       font-weight: 600;
       font-size: 13px;
       transition: all 0.2s;
-      width: 180px; /* Ancho fijo para que no se estiren */
+      width: 180px; /* Ancho fijo */
       cursor: pointer;
       position: relative;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       border: 1px solid #ccc;
       word-wrap: break-word;
-      color: #333; /* Color base del texto */
+      color: #333 !important; /* Fuerza letra oscura */
     }
     .nodo-card:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 10; }
     
-    /* Colores por Nivel (CORREGIDOS) */
-    .nodo-card.presidencia { background: #1a3d7c; color: white !important; border-color: #1a3d7c; }
-    .nodo-card.direccion { background: #28a745; color: white !important; border-color: #28a745; }
-    .nodo-card.gerencia { background: #ffc107; color: #333 !important; border-color: #ffc107; }
-    .nodo-card.division { background: #17a2b8; color: white !important; border-color: #17a2b8; }
-    .nodo-card.opt { background: #ffffff; color: #333 !important; border: 2px solid #1a3d7c; }
+    /* Colores por Nivel */
+    .nodo-card.presidencia { background: #1a3d7c; color: #ffffff !important; border-color: #1a3d7c; }
+    .nodo-card.direccion { background: #28a745; color: #ffffff !important; border-color: #28a745; }
+    .nodo-card.gerencia { background: #ffc107; color: #333333 !important; border-color: #ffc107; }
+    .nodo-card.division { background: #17a2b8; color: #ffffff !important; border-color: #17a2b8; }
+    .nodo-card.opt { background: #ffffff; color: #333333 !important; border: 2px solid #1a3d7c; }
     
     .nodo-badge {
       display: block;
@@ -101,6 +101,7 @@
       background: rgba(0,0,0,0.15);
       padding: 2px 5px;
       border-radius: 10px;
+      color: inherit !important;
     }
     .nodo-card.presidencia .nodo-badge, 
     .nodo-card.direccion .nodo-badge, 
