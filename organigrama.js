@@ -27,6 +27,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('nav-usuario').textContent = 
     (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
 
+    modalCrearBS = new bootstrap.Modal(document.getElementById('modalCrear'));
+
   try {
     const r = await api('obtenerOrganigrama', { token: TOKEN });
     if (!r.ok) throw new Error(r.error);
@@ -38,6 +40,64 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('error-msg').textContent = 'Error: ' + e.message;
   }
 });
+
+let modalCrearBS = null;
+
+async function recargarArbol() {
+  const r = await api('obtenerOrganigrama', { token: TOKEN });
+  if (r.ok) {
+    ARBOL_GLOBAL = r.estructura;
+    renderizarArbol(ARBOL_GLOBAL);
+    expandirTodo();
+  }
+}
+
+window.abrirModalCrear = function() {
+  document.getElementById('nuevoId').value = '';
+  document.getElementById('nuevoNombre').value = '';
+  document.getElementById('nuevoPadre').value = '';
+  document.getElementById('nuevoNivel').value = 'GERENCIA';
+  document.getElementById('msgCrear').textContent = '';
+  modalCrearBS.show();
+};
+
+window.guardarNuevaDependencia = async function() {
+  const id = document.getElementById('nuevoId').value.trim();
+  const nombre = document.getElementById('nuevoNombre').value.trim();
+  const nivel = document.getElementById('nuevoNivel').value;
+  const idPadre = document.getElementById('nuevoPadre').value.trim();
+
+  if (!id || !nombre) {
+    document.getElementById('msgCrear').textContent = 'ID y Nombre son obligatorios';
+    return;
+  }
+
+  try {
+    const r = await api('crearDependencia', { token: TOKEN, idDependencia: id, nombre, nivel, idPadre });
+    if (r.ok) {
+      modalCrearBS.hide();
+      await recargarArbol();
+    } else {
+      document.getElementById('msgCrear').textContent = r.error;
+    }
+  } catch (e) {
+    document.getElementById('msgCrear').textContent = 'Error: ' + e.message;
+  }
+};
+
+window.eliminarDependencia = async function(id) {
+  if (!confirm('¿Estás seguro de eliminar "' + id + '"?\n(Solo se elimina si no tiene personal asignado)')) return;
+  try {
+    const r = await api('eliminarDependencia', { token: TOKEN, idDependencia: id });
+    if (r.ok) {
+      await recargarArbol();
+    } else {
+      alert('Error: ' + r.error);
+    }
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+};
 
 function renderizarArbol(nodos) {
   document.getElementById('loading').classList.add('d-none');
@@ -65,8 +125,14 @@ function crearNodoHTML(nodo, abiertoPorDefecto = false) {
   const botonToggle = tieneHijos ? `<div class="btn-toggle" onclick="toggleNodo(event, this)">${abiertoPorDefecto ? '-' : '+'}</div>` : '';
 
   let html = `<li>`;
-  html += `<div class="nodo-card ${claseColor}" ${tieneHijos ? 'onclick="toggleNodo(event, this)"' : ''}>`;
+  html += `<div class="nodo-card ${claseColor}" style="position: relative;" ${tieneHijos ? 'onclick="toggleNodo(event, this)"' : ''}>`;
   html += botonToggle;
+
+  // Botón de eliminar (solo si no tiene hijos y no es la raíz DIRECTORIO)
+  if (!tieneHijos && nodo.idDependencia !== 'DIRECTORIO') {
+    html += `<button class="btn-eliminar-nodo" title="Eliminar" onclick="event.stopPropagation(); eliminarDependencia('${nodo.idDependencia}')">🗑️</button>`;
+  }
+
   html += `<div class="fw-bold">${nodo.nombre}</div>`;
   
   // 🔥 AQUÍ AGREGAMOS EL CÓDIGO ID EN LETRA PEQUEÑA
