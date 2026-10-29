@@ -54,11 +54,10 @@ function renderizarArbol(nodos) {
 }
 
 function crearNodoHTML(nodo, abiertoPorDefecto = false) {
-  let claseColor = 'opt';
+  let claseColor = 'opt'; 
   if (nodo.nivel === 'PRESIDENCIA') claseColor = 'presidencia';
   else if (nodo.nivel === 'DIRECCION') claseColor = 'direccion';
   else if (nodo.nivel === 'GERENCIA') claseColor = 'gerencia';
-  else if (nodo.nivel === 'DIVISION') claseColor = 'division';
 
   const tieneHijos = nodo.hijos && nodo.hijos.length > 0;
   const displayHijos = abiertoPorDefecto ? 'abierto' : '';
@@ -68,8 +67,10 @@ function crearNodoHTML(nodo, abiertoPorDefecto = false) {
   let html = `<li>`;
   html += `<div class="nodo-card ${claseColor}" ${tieneHijos ? 'onclick="toggleNodo(event, this)"' : ''}>`;
   html += botonToggle;
-  html += `<div>${nodo.nombre}</div>`;
-  html += `<span class="nodo-badge">${nodo.cantidad} pers.</span>`;
+  html += `<div class="fw-bold">${nodo.nombre}</div>`;
+  if (nodo.cantidad > 0) {
+    html += `<span class="nodo-badge">${nodo.cantidad} personas</span>`;
+  }
   html += `</div>`;
 
   if (tieneHijos) {
@@ -145,8 +146,8 @@ window.filtrarOrganigrama = function() {
   resultados.forEach(nodo => {
     let claseColor = nodo.nivel === 'DIRECCION' ? 'direccion' : (nodo.nivel === 'GERENCIA' ? 'gerencia' : 'opt');
     html += `<li><div class="nodo-card ${claseColor}">`;
-    html += `<div>${nodo.nombre}</div>`;
-    html += `<span class="nodo-badge">${nodo.cantidad} pers.</span>`;
+    html += `<div class="fw-bold">${nodo.nombre}</div>`;
+    if (nodo.cantidad > 0) html += `<span class="nodo-badge">${nodo.cantidad} personas</span>`;
     html += `</div></li>`;
   });
   html += '</ul>';
