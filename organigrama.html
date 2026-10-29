@@ -6,18 +6,57 @@
   <title>OEP — Organigrama Estructural</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
   <style>
+    body { background: #f4f6f9; }
     #organigrama-container {
       background: white;
-      padding: 20px;
+      padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      overflow-x: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      min-height: 500px;
     }
-    .mermaid {
+    
+    /* Estilos del Árbol */
+    .arbol-organigrama, .nodo-hijos {
+      list-style: none;
+      padding-left: 20px;
+      margin: 0;
+      border-left: 2px solid #e0e0e0;
+    }
+    .nodo-hijos { margin-left: 15px; }
+    .arbol-organigrama { padding-left: 0; border-left: none; }
+    
+    .nodo-item {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      margin: 5px 0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    .nodo-item:hover { transform: translateX(5px); border-color: #ccc; }
+    
+    /* Colores por Nivel */
+    .nodo-item.presidencia { background: #1a3d7c; color: white; }
+    .nodo-item.direccion { background: #28a745; color: white; }
+    .nodo-item.gerencia { background: #ffc107; color: #333; }
+    .nodo-item.division { background: #17a2b8; color: white; }
+    .nodo-item.opt { background: #f8f9fa; color: #333; border: 1px solid #ddd; }
+    
+    /* Icono de apertura */
+    .nodo-item.abierto::before { content: "📂 "; margin-right: 5px; }
+    .nodo-item:not(.abierto)::before { content: "📁 "; margin-right: 5px; }
+    .nodo-item.opt::before { content: "📄 "; }
+    
+    .nodo-badge {
+      background: rgba(0,0,0,0.1);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
     }
   </style>
 </head>
@@ -37,19 +76,20 @@
   </nav>
 
   <div class="container my-4">
-    <h2 class="mb-4 text-white">🏢 Organigrama Estructural IPOSTEL</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="text-dark">🏢 Organigrama Estructural IPOSTEL</h2>
+      <input type="text" id="buscador" class="form-control w-25" placeholder="🔍 Buscar Dirección, Gerencia..." onkeyup="filtrarOrganigrama()">
+    </div>
     
-    <div id="loading" class="text-center my-5 text-white">
-      <div class="spinner-border" role="status"></div>
+    <div id="loading" class="text-center my-5">
+      <div class="spinner-border text-primary" role="status"></div>
       <p class="mt-2">Generando organigrama...</p>
     </div>
 
     <div id="error-msg" class="alert alert-danger d-none"></div>
 
     <div id="organigrama-container" class="d-none">
-      <div class="mermaid" id="mermaid-graph">
-        <!-- Aquí se inyecta el gráfico -->
-      </div>
+      <!-- El árbol se inyecta aquí -->
     </div>
   </div>
 
