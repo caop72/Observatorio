@@ -8,56 +8,137 @@
   <link rel="stylesheet" href="styles.css">
   <style>
     body { background: #f4f6f9; }
+    
+    /* Título visible */
+    .header-title { color: #1a3d7c; font-weight: bold; }
+
     #organigrama-container {
       background: white;
-      padding: 30px;
+      padding: 40px;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow-x: auto; /* Permite scroll horizontal si el árbol es muy ancho */
       min-height: 500px;
     }
     
-    /* Estilos del Árbol */
-    .arbol-organigrama, .nodo-hijos {
-      list-style: none;
-      padding-left: 20px;
-      margin: 0;
-      border-left: 2px solid #e0e0e0;
-    }
-    .nodo-hijos { margin-left: 15px; }
-    .arbol-organigrama { padding-left: 0; border-left: none; }
-    
-    .nodo-item {
+    /* =========================================
+       ESTILOS DE DIAGRAMA DE FLUJO (ÁRBOL)
+       ========================================= */
+    .tree {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 15px;
-      margin: 5px 0;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
-      border: 1px solid transparent;
+      justify-content: center;
     }
-    .nodo-item:hover { transform: translateX(5px); border-color: #ccc; }
+    .tree ul {
+      padding-top: 20px; 
+      position: relative;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .tree li {
+      float: left; text-align: center;
+      list-style-type: none;
+      position: relative;
+      padding: 20px 5px 0 5px;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Líneas conectoras */
+    .tree li::before, .tree li::after{
+      content: ''; position: absolute; top: 0; right: 50%;
+      border-top: 2px solid #ccc;
+      width: 50%; height: 20px;
+    }
+    .tree li::after{
+      right: auto; left: 50%;
+      border-left: 2px solid #ccc;
+    }
+    .tree li:only-child::after, .tree li:only-child::before {
+      display: none;
+    }
+    .tree li:only-child{ padding-top: 0;}
+    .tree li:first-child::before, .tree li:last-child::after{
+      border: 0 none;
+    }
+    .tree li:last-child::before{
+      border-right: 2px solid #ccc;
+      border-radius: 0 5px 0 0;
+    }
+    .tree li:first-child::after{
+      border-radius: 5px 0 0 0;
+    }
+    .tree ul ul::before{
+      content: ''; position: absolute; top: 0; left: 50%;
+      border-left: 2px solid #ccc;
+      width: 0; height: 20px;
+    }
+
+    /* Tarjetas de Nodos */
+    .nodo-card {
+      display: inline-block;
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      font-size: 12px;
+      transition: all 0.2s;
+      min-width: 150px;
+      max-width: 220px;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 1px solid #ccc;
+      word-wrap: break-word;
+    }
+    .nodo-card:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
     
     /* Colores por Nivel */
-    .nodo-item.presidencia { background: #1a3d7c; color: white; }
-    .nodo-item.direccion { background: #28a745; color: white; }
-    .nodo-item.gerencia { background: #ffc107; color: #333; }
-    .nodo-item.division { background: #17a2b8; color: white; }
-    .nodo-item.opt { background: #f8f9fa; color: #333; border: 1px solid #ddd; }
-    
-    /* Icono de apertura */
-    .nodo-item.abierto::before { content: "📂 "; margin-right: 5px; }
-    .nodo-item:not(.abierto)::before { content: "📁 "; margin-right: 5px; }
-    .nodo-item.opt::before { content: "📄 "; }
+    .nodo-card.presidencia { background: #1a3d7c; color: white; border-color: #1a3d7c; }
+    .nodo-card.direccion { background: #28a745; color: white; border-color: #28a745; }
+    .nodo-card.gerencia { background: #ffc107; color: #333; border-color: #ffc107; }
+    .nodo-card.division { background: #17a2b8; color: white; border-color: #17a2b8; }
+    .nodo-card.opt { background: #f8f9fa; color: #333; }
     
     .nodo-badge {
+      display: block;
+      font-size: 10px;
+      margin-top: 5px;
       background: rgba(0,0,0,0.1);
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 12px;
+      padding: 2px 5px;
+      border-radius: 10px;
     }
+
+    /* Botón de colapsar dentro de la tarjeta */
+    .btn-toggle {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      border: 1px solid #ccc;
+      font-size: 12px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .btn-toggle:hover { background: #eee; }
+
+    /* Ocultar hijos */
+    .nodo-hijos { display: none; }
+    .nodo-hijos.abierto { display: flex; }
+
   </style>
 </head>
 <body>
@@ -75,10 +156,16 @@
     </div>
   </nav>
 
-  <div class="container my-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="text-dark">🏢 Organigrama Estructural IPOSTEL</h2>
-      <input type="text" id="buscador" class="form-control w-25" placeholder="🔍 Buscar Dirección, Gerencia..." onkeyup="filtrarOrganigrama()">
+  <div class="container-fluid my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+      <h2 class="header-title mb-0">🏢 Organigrama Estructural IPOSTEL</h2>
+      
+      <!-- Controles -->
+      <div class="d-flex gap-2">
+        <input type="text" id="buscador" class="form-control w-100" placeholder="🔍 Buscar..." onkeyup="filtrarOrganigrama()" style="min-width: 250px;">
+        <button class="btn btn-primary" onclick="expandirTodo()">➕ Abrir Todo</button>
+        <button class="btn btn-secondary" onclick="contraerTodo()">➖ Cerrar Todo</button>
+      </div>
     </div>
     
     <div id="loading" class="text-center my-5">
@@ -89,7 +176,9 @@
     <div id="error-msg" class="alert alert-danger d-none"></div>
 
     <div id="organigrama-container" class="d-none">
-      <!-- El árbol se inyecta aquí -->
+      <div class="tree" id="tree-root">
+        <!-- El árbol se inyecta aquí -->
+      </div>
     </div>
   </div>
 
