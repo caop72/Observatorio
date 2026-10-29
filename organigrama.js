@@ -42,7 +42,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 function renderizarArbol(nodos) {
   document.getElementById('loading').classList.add('d-none');
   const container = document.getElementById('tree-root');
-  container.classList.remove('d-none');
+  document.getElementById('organigrama-container').classList.remove('d-none');
   
   let html = '<ul>';
   nodos.forEach(nodo => {
@@ -68,7 +68,7 @@ function crearNodoHTML(nodo, abiertoPorDefecto = false) {
   let html = `<li>`;
   html += `<div class="nodo-card ${claseColor}" ${tieneHijos ? 'onclick="toggleNodo(event, this)"' : ''}>`;
   html += botonToggle;
-  html += `${nodo.nombre}`;
+  html += `<div>${nodo.nombre}</div>`;
   html += `<span class="nodo-badge">${nodo.cantidad} pers.</span>`;
   html += `</div>`;
 
@@ -145,7 +145,7 @@ window.filtrarOrganigrama = function() {
   resultados.forEach(nodo => {
     let claseColor = nodo.nivel === 'DIRECCION' ? 'direccion' : (nodo.nivel === 'GERENCIA' ? 'gerencia' : 'opt');
     html += `<li><div class="nodo-card ${claseColor}">`;
-    html += `${nodo.nombre}`;
+    html += `<div>${nodo.nombre}</div>`;
     html += `<span class="nodo-badge">${nodo.cantidad} pers.</span>`;
     html += `</div></li>`;
   });
