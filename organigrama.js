@@ -68,6 +68,12 @@ function crearNodoHTML(nodo, abiertoPorDefecto = false) {
   html += `<div class="nodo-card ${claseColor}" ${tieneHijos ? 'onclick="toggleNodo(event, this)"' : ''}>`;
   html += botonToggle;
   html += `<div class="fw-bold">${nodo.nombre}</div>`;
+  
+  // 🔥 AQUÍ AGREGAMOS EL CÓDIGO ID EN LETRA PEQUEÑA
+  if (nodo.idDependencia && nodo.idDependencia !== nodo.nombre) {
+    html += `<div class="small text-muted mt-1" style="font-size: 9px;">ID: ${nodo.idDependencia}</div>`;
+  }
+
   if (nodo.cantidad > 0) {
     html += `<span class="nodo-badge">${nodo.cantidad} personas</span>`;
   }
@@ -125,7 +131,7 @@ window.filtrarOrganigrama = function() {
   function buscarEnNodos(nodos) {
     let resultados = [];
     nodos.forEach(nodo => {
-      if (nodo.nombre.toLowerCase().includes(texto) || nodo.id.toLowerCase().includes(texto)) {
+      if (nodo.nombre.toLowerCase().includes(texto) || (nodo.idDependencia && nodo.idDependencia.toLowerCase().includes(texto))) {
         resultados.push(nodo);
       }
       if (nodo.hijos && nodo.hijos.length > 0) {
@@ -147,6 +153,9 @@ window.filtrarOrganigrama = function() {
     let claseColor = nodo.nivel === 'DIRECCION' ? 'direccion' : (nodo.nivel === 'GERENCIA' ? 'gerencia' : 'opt');
     html += `<li><div class="nodo-card ${claseColor}">`;
     html += `<div class="fw-bold">${nodo.nombre}</div>`;
+    if (nodo.idDependencia && nodo.idDependencia !== nodo.nombre) {
+      html += `<div class="small text-muted mt-1" style="font-size: 9px;">ID: ${nodo.idDependencia}</div>`;
+    }
     if (nodo.cantidad > 0) html += `<span class="nodo-badge">${nodo.cantidad} personas</span>`;
     html += `</div></li>`;
   });
