@@ -8,8 +8,6 @@
   <link rel="stylesheet" href="styles.css">
   <style>
     body { background: #f4f6f9; }
-    
-    /* Título visible */
     .header-title { color: #1a3d7c; font-weight: bold; }
 
     #organigrama-container {
@@ -17,27 +15,23 @@
       padding: 40px;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      overflow-x: auto; /* Permite scroll horizontal si el árbol es muy ancho */
-      min-height: 500px;
+      overflow-x: auto; 
+      min-height: 600px;
     }
     
     /* =========================================
-       ESTILOS DE DIAGRAMA DE FLUJO (ÁRBOL)
+       ESTILOS DE DIAGRAMA DE FLUJO
        ========================================= */
-    .tree {
-      display: flex;
-      justify-content: center;
-    }
     .tree ul {
       padding-top: 20px; 
       position: relative;
       transition: all 0.3s;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
     }
+    
     .tree li {
-      float: left; text-align: center;
+      text-align: center;
       list-style-type: none;
       position: relative;
       padding: 20px 5px 0 5px;
@@ -48,92 +42,92 @@
     }
 
     /* Líneas conectoras */
-    .tree li::before, .tree li::after{
+    .tree li::before, .tree li::after {
       content: ''; position: absolute; top: 0; right: 50%;
       border-top: 2px solid #ccc;
       width: 50%; height: 20px;
     }
-    .tree li::after{
+    .tree li::after {
       right: auto; left: 50%;
       border-left: 2px solid #ccc;
     }
-    .tree li:only-child::after, .tree li:only-child::before {
-      display: none;
-    }
-    .tree li:only-child{ padding-top: 0;}
-    .tree li:first-child::before, .tree li:last-child::after{
-      border: 0 none;
-    }
-    .tree li:last-child::before{
+    .tree li:only-child::after, .tree li:only-child::before { display: none; }
+    .tree li:only-child { padding-top: 0; }
+    .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+    .tree li:last-child::before {
       border-right: 2px solid #ccc;
       border-radius: 0 5px 0 0;
     }
-    .tree li:first-child::after{
+    .tree li:first-child::after {
       border-radius: 5px 0 0 0;
     }
-    .tree ul ul::before{
+    .tree ul ul::before {
       content: ''; position: absolute; top: 0; left: 50%;
       border-left: 2px solid #ccc;
       width: 0; height: 20px;
     }
 
-    /* Tarjetas de Nodos */
+    /* Tarjetas de Nodos (CORREGIDAS) */
     .nodo-card {
       display: inline-block;
       padding: 10px 15px;
       border-radius: 8px;
       text-decoration: none;
-      color: #333;
-      font-weight: 500;
-      font-size: 12px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-weight: 600;
+      font-size: 13px;
       transition: all 0.2s;
-      min-width: 150px;
-      max-width: 220px;
+      width: 180px; /* Ancho fijo para que no se estiren */
       cursor: pointer;
       position: relative;
-      z-index: 2;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       border: 1px solid #ccc;
       word-wrap: break-word;
+      color: #333; /* Color base del texto */
     }
-    .nodo-card:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    .nodo-card:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 10; }
     
-    /* Colores por Nivel */
-    .nodo-card.presidencia { background: #1a3d7c; color: white; border-color: #1a3d7c; }
-    .nodo-card.direccion { background: #28a745; color: white; border-color: #28a745; }
-    .nodo-card.gerencia { background: #ffc107; color: #333; border-color: #ffc107; }
-    .nodo-card.division { background: #17a2b8; color: white; border-color: #17a2b8; }
-    .nodo-card.opt { background: #f8f9fa; color: #333; }
+    /* Colores por Nivel (CORREGIDOS) */
+    .nodo-card.presidencia { background: #1a3d7c; color: white !important; border-color: #1a3d7c; }
+    .nodo-card.direccion { background: #28a745; color: white !important; border-color: #28a745; }
+    .nodo-card.gerencia { background: #ffc107; color: #333 !important; border-color: #ffc107; }
+    .nodo-card.division { background: #17a2b8; color: white !important; border-color: #17a2b8; }
+    .nodo-card.opt { background: #ffffff; color: #333 !important; border: 2px solid #1a3d7c; }
     
     .nodo-badge {
       display: block;
-      font-size: 10px;
-      margin-top: 5px;
-      background: rgba(0,0,0,0.1);
+      font-size: 11px;
+      margin-top: 8px;
+      background: rgba(0,0,0,0.15);
       padding: 2px 5px;
       border-radius: 10px;
     }
+    .nodo-card.presidencia .nodo-badge, 
+    .nodo-card.direccion .nodo-badge, 
+    .nodo-card.division .nodo-badge { background: rgba(255,255,255,0.2); }
 
     /* Botón de colapsar dentro de la tarjeta */
     .btn-toggle {
       position: absolute;
       top: -10px;
       right: -10px;
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       background: white;
-      border: 1px solid #ccc;
-      font-size: 12px;
+      border: 2px solid #1a3d7c;
+      color: #1a3d7c;
+      font-size: 14px;
+      font-weight: bold;
       line-height: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       z-index: 10;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .btn-toggle:hover { background: #eee; }
+    .btn-toggle:hover { background: #e9ecef; }
 
     /* Ocultar hijos */
     .nodo-hijos { display: none; }
@@ -160,7 +154,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4 px-3">
       <h2 class="header-title mb-0">🏢 Organigrama Estructural IPOSTEL</h2>
       
-      <!-- Controles -->
       <div class="d-flex gap-2">
         <input type="text" id="buscador" class="form-control w-100" placeholder="🔍 Buscar..." onkeyup="filtrarOrganigrama()" style="min-width: 250px;">
         <button class="btn btn-primary" onclick="expandirTodo()">➕ Abrir Todo</button>
@@ -176,9 +169,7 @@
     <div id="error-msg" class="alert alert-danger d-none"></div>
 
     <div id="organigrama-container" class="d-none">
-      <div class="tree" id="tree-root">
-        <!-- El árbol se inyecta aquí -->
-      </div>
+      <div class="tree" id="tree-root"></div>
     </div>
   </div>
 
