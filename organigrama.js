@@ -63,7 +63,6 @@ function crearNodoHTML(nodo, abiertoPorDefecto = false) {
   const tieneHijos = nodo.hijos && nodo.hijos.length > 0;
   const displayHijos = abiertoPorDefecto ? 'abierto' : '';
   
-  // Solo mostramos el botón +/- si tiene hijos
   const botonToggle = tieneHijos ? `<div class="btn-toggle" onclick="toggleNodo(event, this)">${abiertoPorDefecto ? '-' : '+'}</div>` : '';
 
   let html = `<li>`;
