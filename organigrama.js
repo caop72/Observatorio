@@ -15,17 +15,15 @@ window.addEventListener('DOMContentLoaded', async () => {
   USUARIO = JSON.parse(localStorage.getItem('oep_usuario') || 'null');
   if (!USUARIO || !USUARIO.token) { location.href = 'index.html'; return; }
   
-  // 🔒 VALIDACIÓN AQUÍ (Ya USUARIO existe)
   const rol = (USUARIO.rol || USUARIO.cargo || '').toString();
   if (rol !== 'Observatorio') {
     alert('Esta sección es exclusiva del Observatorio.');
-    location.href = 'reporte.html'; // Lo devuelve a su panel
+    location.href = 'reporte.html';
     return;
   }
 
   TOKEN = USUARIO.token;
 
-  // Mostrar nombre de usuario en el navbar
   document.getElementById('nav-usuario').textContent = 
     (USUARIO.nombres || '') + ' ' + (USUARIO.apellidos || '') + ' — ' + (USUARIO.cargo || '');
 
@@ -70,9 +68,13 @@ function dibujarOrganigrama(estructura) {
     }
   });
 
-  mermaid.initialize({ startOnLoad: false, theme: 'default', flowchart: { curve: 'basis' } });
-  document.getElementById('mermaid-graph').innerHTML = graphDef;
-  mermaid.run();
+  // 🔥 CORRECCIÓN AQUÍ: Le decimos a Mermaid que procese el código
+  const contenedor = document.getElementById('mermaid-graph');
+  contenedor.innerHTML = ''; // Limpiamos el contenedor
+  contenedor.textContent = graphDef; // Inyectamos el código como texto
+  contenedor.removeAttribute('data-processed'); // Forzamos el reprocesamiento
+  
+  mermaid.init(undefined, contenedor);
 }
 
 async function cerrarSesion() {
