@@ -46,7 +46,7 @@ function renderizarArbol(nodos) {
   
   let html = '<ul>';
   nodos.forEach(nodo => {
-    html += crearNodoHTML(nodo, true); // El primer nivel siempre abierto
+    html += crearNodoHTML(nodo, true); 
   });
   html += '</ul>';
   
@@ -54,20 +54,20 @@ function renderizarArbol(nodos) {
 }
 
 function crearNodoHTML(nodo, abiertoPorDefecto = false) {
-  // Definir clase de color
   let claseColor = 'opt';
   if (nodo.nivel === 'PRESIDENCIA') claseColor = 'presidencia';
   else if (nodo.nivel === 'DIRECCION') claseColor = 'direccion';
   else if (nodo.nivel === 'GERENCIA') claseColor = 'gerencia';
   else if (nodo.nivel === 'DIVISION') claseColor = 'division';
 
-  // Definir si tiene hijos para mostrar el botón +
   const tieneHijos = nodo.hijos && nodo.hijos.length > 0;
   const displayHijos = abiertoPorDefecto ? 'abierto' : '';
+  
+  // Solo mostramos el botón +/- si tiene hijos
   const botonToggle = tieneHijos ? `<div class="btn-toggle" onclick="toggleNodo(event, this)">${abiertoPorDefecto ? '-' : '+'}</div>` : '';
 
   let html = `<li>`;
-  html += `<div class="nodo-card ${claseColor}" onclick="toggleNodo(event, this)">`;
+  html += `<div class="nodo-card ${claseColor}" ${tieneHijos ? 'onclick="toggleNodo(event, this)"' : ''}>`;
   html += botonToggle;
   html += `${nodo.nombre}`;
   html += `<span class="nodo-badge">${nodo.cantidad} pers.</span>`;
@@ -85,11 +85,9 @@ function crearNodoHTML(nodo, abiertoPorDefecto = false) {
   return html;
 }
 
-// Función para abrir/cerrar una rama
 window.toggleNodo = function(event, element) {
-  event.stopPropagation(); // Evita que el clic se propague al padre
+  event.stopPropagation(); 
   
-  // Si el clic fue en el botón, el elemento es el botón; si no, es la tarjeta
   const tarjeta = element.classList.contains('btn-toggle') ? element.parentElement : element;
   const ul = tarjeta.nextElementSibling;
   const btn = tarjeta.querySelector('.btn-toggle');
@@ -105,23 +103,16 @@ window.toggleNodo = function(event, element) {
   }
 };
 
-// Botones Globales
 window.expandirTodo = function() {
   document.querySelectorAll('.nodo-hijos').forEach(ul => ul.classList.add('abierto'));
   document.querySelectorAll('.btn-toggle').forEach(btn => btn.textContent = '-');
 };
 
 window.contraerTodo = function() {
-  // Dejamos el primer nivel abierto, cerramos el resto
-  const primerUl = document.querySelector('.tree > ul');
-  if (primerUl) {
-    primerUl.querySelectorAll('.nodo-hijos').forEach(ul => ul.classList.remove('abierto'));
-    primerUl.querySelectorAll('.nodo-hijos > li > ul').forEach(ul => ul.classList.add('abierto')); // Abre nivel 1
-    primerUl.querySelectorAll('.btn-toggle').forEach(btn => btn.textContent = '+');
-  }
+  document.querySelectorAll('.nodo-hijos').forEach(ul => ul.classList.remove('abierto'));
+  document.querySelectorAll('.btn-toggle').forEach(btn => btn.textContent = '+');
 };
 
-// Buscador
 window.filtrarOrganigrama = function() {
   const texto = document.getElementById('buscador').value.toLowerCase();
   const container = document.getElementById('tree-root');
