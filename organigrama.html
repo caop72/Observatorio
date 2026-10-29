@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OEP — Organigrama Estructural</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+  <style>
+    #organigrama-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-dark" style="background:#1a3d7c;">
+    <div class="container-fluid">
+      <span class="navbar-brand">OEP — Organigrama</span>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-white" id="nav-usuario"></span>
+        <a href="reporte.html" class="btn btn-outline-light btn-sm">Carga Diaria</a>
+        <a href="estadisticas.html" class="btn btn-outline-light btn-sm">Estadísticas</a>
+        <a href="jerarquia.html" class="btn btn-outline-light btn-sm">Jerarquía</a>
+        <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-4">
+    <h2 class="mb-4 text-white">🏢 Organigrama Estructural IPOSTEL</h2>
+    
+    <div id="loading" class="text-center my-5 text-white">
+      <div class="spinner-border" role="status"></div>
+      <p class="mt-2">Generando organigrama...</p>
+    </div>
+
+    <div id="error-msg" class="alert alert-danger d-none"></div>
+
+    <div id="organigrama-container" class="d-none">
+      <div class="mermaid" id="mermaid-graph">
+        <!-- Aquí se inyecta el gráfico -->
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="organigrama.js"></script>
+</body>
+</html>
